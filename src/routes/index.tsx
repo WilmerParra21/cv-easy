@@ -1,29 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
+
+const CVBuilder = lazy(() => import("@/components/CVBuilder"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "cv-easy — Crea tu CV profesional gratis en minutos" },
+      { name: "description", content: "Crea, edita y descarga tu currículum profesional en PDF sin registrarte. Gratis, ligero y funciona en cualquier teléfono." },
+      { property: "og:title", content: "cv-easy — Tu CV profesional, gratis y en minutos" },
+      { property: "og:description", content: "Crea, edita y descarga tu currículum en PDF sin registrarte." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Cargando cv-easy…</div>}>
+      <CVBuilder />
+    </Suspense>
   );
 }
