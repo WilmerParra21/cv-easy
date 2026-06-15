@@ -320,27 +320,28 @@ export default function CVBuilder() {
           <span className="silver-text">cv</span><span className="text-primary">-easy</span>
         </h1>
         <div className="flex items-center gap-2">
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted">
-            {theme === "dark" ? "☀ Claro" : "☾ Oscuro"}
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted">
+            {theme === "dark" ? "☀" : "☾"}
           </button>
           <button onClick={exportPDF} className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-primary text-primary-foreground font-semibold hover:opacity-90">
-            ⬇ Descargar PDF
+            ⬇ PDF
           </button>
         </div>
       </header>
 
-      <section className="px-4 sm:px-6 py-8 sm:py-12 text-center bg-gradient-to-b from-card to-background border-b border-border">
-        <h2 className="text-2xl sm:text-4xl font-black mb-3 max-w-2xl mx-auto leading-tight">
-          Tu currículum profesional, <span className="text-primary">listo en minutos</span>.
+      <section className="px-4 sm:px-6 pt-8 pb-6 sm:pt-14 sm:pb-10 text-center bg-gradient-to-b from-card via-card to-background border-b border-border">
+        <span className="inline-block text-[11px] tracking-widest uppercase text-primary font-bold mb-3 px-3 py-1 rounded-full bg-primary/10">100% gratis · sin registro</span>
+        <h2 className="text-3xl sm:text-5xl font-black mb-3 max-w-2xl mx-auto leading-[1.1]">
+          Crea tu CV profesional <span className="text-primary">en minutos</span>,<br className="hidden sm:block" /> directo desde el móvil.
         </h2>
-        <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto mb-5">
-          Sin registro, sin pagos, sin complicaciones. Edita, visualiza y descarga.
+        <p className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto mb-6 px-2">
+          Editor en vivo, plantillas estilo Harvard y descarga en PDF. Tus datos se guardan solo en tu dispositivo.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <button onClick={loadSample} className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold">Cargar ejemplo</button>
-          <button onClick={reset} className="px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted">Crear desde cero</button>
-          <button onClick={() => importInputRef.current?.click()} className="px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted">
-            Importar
+          <button onClick={exportPDF} className="px-5 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90">⬇ Descargar PDF</button>
+          <button onClick={loadSample} className="px-4 py-2.5 rounded-md border border-border text-sm font-semibold hover:bg-muted">Cargar ejemplo</button>
+          <button onClick={() => importInputRef.current?.click()} className="px-4 py-2.5 rounded-md border border-border text-sm font-semibold hover:bg-muted">
+            ↥ Importar
           </button>
           <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
         </div>
