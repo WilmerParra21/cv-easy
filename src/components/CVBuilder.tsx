@@ -11,7 +11,7 @@ type CVData = {
   habilidades: SkillGroup[];
 };
 
-const STORAGE_KEY = "cv-easy:data:v2";
+const STORAGE_KEY = "cv-easy:data:v3";
 const THEME_KEY = "cv-easy:theme";
 const WELCOME_KEY = "cv-easy:welcome-dismissed:v2";
 
@@ -19,7 +19,7 @@ const SAMPLE_DATA: CVData = {
   config: { plantilla: "harvard", fuente: "Times New Roman", mostrar_foto: false },
   datos_personales: {
     nombre: "Ana Rodríguez Martínez",
-    puesto: "Ingeniera en Sistemas",
+    puesto: "Licenciada en Administración de Empresas",
     correo: "ana.rodriguez@ejemplo.com",
     telefono: "+34 612 345 678",
     ubicacion: "Madrid, España",
@@ -27,42 +27,43 @@ const SAMPLE_DATA: CVData = {
     foto_base64: "",
   },
   perfil:
-    "Ingeniera en Sistemas con más de 5 años de experiencia diseñando y desarrollando soluciones digitales de alto impacto. Especialista en arquitectura web moderna con React, Node.js y bases de datos relacionales. Combina metodologías ágiles (Scrum) con buenas prácticas de Programación Orientada a Objetos y enfoque UX para entregar productos escalables y mantenibles. Experiencia liderando equipos pequeños, comunicando con stakeholders y traduciendo requisitos de negocio en software funcional bajo control de versiones con Git y gestión en Notion o Jira.",
+    "Licenciada en Administración de Empresas con más de 6 años de experiencia en gestión administrativa, control financiero y coordinación de equipos. Especialista en optimización de procesos internos, planificación presupuestaria y atención a proveedores y clientes corporativos. Combina visión estratégica con un enfoque práctico orientado a resultados, garantizando el cumplimiento de objetivos, la mejora continua y la eficiencia operativa en entornos dinámicos y multidisciplinares.",
   experiencia: [
     {
-      empresa: "Innovatech Solutions, S.L. – Madrid, España",
-      rol: "Desarrolladora Full Stack Senior",
-      periodo: "Marzo 2022 – Presente",
-      descripcion: "Desarrollo Full Stack y liderazgo técnico.",
+      empresa: "Grupo Mercantil Ibérico, S.A. – Madrid, España",
+      rol: "Administradora General",
+      periodo: "Abril 2022 – Presente",
+      descripcion: "Gestión administrativa, financiera y operativa de la oficina central.",
       logros:
-        "Lideré el rediseño de la plataforma principal de e-commerce, incrementando la conversión en un 28%.\nMigré la arquitectura monolítica a microservicios con Node.js y Docker reduciendo costes de infraestructura un 35%.\nMentoricé a 4 desarrolladores junior en buenas prácticas de testing y code review.",
+        "Reorganicé el área administrativa reduciendo los tiempos de facturación en un 30%.\nImplementé un sistema de control de gastos que generó un ahorro anual del 18% en costes operativos.\nCoordiné un equipo de 8 personas entre administración, contabilidad y atención al cliente.\nNegocié contratos con 25 proveedores estratégicos mejorando las condiciones de pago.",
     },
     {
-      empresa: "Freelance, Desarrolladora Web – Remoto",
-      rol: "Consultora Independiente",
-      periodo: "Enero 2020 – Febrero 2022",
-      descripcion: "Desarrollo multiplataforma para clientes internacionales.",
+      empresa: "Distribuciones Castilla, S.L. – Valladolid, España",
+      rol: "Asistente Administrativa Senior",
+      periodo: "Febrero 2019 – Marzo 2022",
+      descripcion: "Soporte administrativo, contable y comercial a la dirección.",
       logros:
-        "Desarrollé una aplicación web de facturación con integración de pasarela de pago para una pyme retail.\nDiseñé y modelé una base de datos PostgreSQL de 5M de registros para un sistema de inventario.\nEntregué 12 proyectos en plazo y presupuesto con valoración media de 4.9/5 en plataformas freelance.",
+        "Gestioné la facturación mensual de más de 400 clientes con cero incidencias contables.\nElaboré informes financieros y de tesorería para la toma de decisiones de la gerencia.\nDigitalicé el archivo documental de la empresa, agilizando consultas internas en un 60%.",
     },
   ],
   educacion: [
     {
-      institucion: "Universidad Politécnica de Madrid",
-      grado: "Grado en Ingeniería Informática",
-      periodo: "Septiembre 2015 – Junio 2019",
+      institucion: "Universidad Complutense de Madrid",
+      grado: "Licenciatura en Administración y Dirección de Empresas",
+      periodo: "Septiembre 2013 – Junio 2018",
     },
   ],
   certificaciones: [
-    { nombre: "AWS Certified Solutions Architect – Associate", institucion: "Amazon Web Services", fecha: "Mayo 2024" },
-    { nombre: "Professional Scrum Master I (PSM I)", institucion: "Scrum.org", fecha: "Noviembre 2023" },
-    { nombre: "Fundamentos UX/UI", institucion: "Platzi", fecha: "Agosto 2022" },
+    { nombre: "Gestión Financiera para No Financieros", institucion: "ESIC Business School", fecha: "Octubre 2024" },
+    { nombre: "Excel Avanzado para Administración", institucion: "Cámara de Comercio de Madrid", fecha: "Marzo 2023" },
+    { nombre: "Atención al Cliente y Negociación", institucion: "CEPADE", fecha: "Junio 2022" },
   ],
   habilidades: [
-    { categoria: "Lenguajes y Frameworks", items: "JavaScript (React, Next.js, Node.js), TypeScript, Python, HTML5, CSS3, Tailwind" },
-    { categoria: "Bases de datos & Cloud", items: "PostgreSQL, MySQL, MongoDB, AWS (EC2, S3, Lambda), Firebase" },
-    { categoria: "Gestión y Productividad", items: "Scrum, Kanban, Jira, Notion, Confluence" },
-    { categoria: "Herramientas Técnicas", items: "Git, GitHub Actions, Docker, Postman, VS Code, Figma" },
+    { categoria: "Gestión Administrativa", items: "Facturación, control de gastos, tesorería, archivo documental, gestión de proveedores" },
+    { categoria: "Contabilidad y Finanzas", items: "Contabilidad básica, conciliaciones bancarias, presupuestos, informes financieros" },
+    { categoria: "Herramientas Ofimáticas", items: "Microsoft Office (Excel avanzado, Word, PowerPoint), Google Workspace, SAP, Sage" },
+    { categoria: "Habilidades Blandas", items: "Liderazgo de equipos, comunicación efectiva, organización, resolución de problemas, atención al detalle" },
+    { categoria: "Idiomas", items: "Español (nativo), Inglés (B2 – First Certificate)" },
   ],
 };
 
@@ -230,6 +231,51 @@ export default function CVBuilder() {
       pagebreak: { mode: ["css", "legacy"] },
     }).from(el).save();
   };
+  const download = (filename: string, content: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const exportJSON = () => {
+    const name = (data.datos_personales.nombre || "cv-easy").replace(/\s+/g, "_");
+    download(`${name}.json`, JSON.stringify(data, null, 2), "application/json");
+  };
+  const exportMD = () => {
+    const dp = data.datos_personales;
+    const lines: string[] = [];
+    lines.push(`# ${dp.nombre || "Tu Nombre"}`);
+    if (dp.puesto) lines.push(`**${dp.puesto}**`);
+    const contact = [dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" · ");
+    if (contact) lines.push(contact);
+    if (data.perfil) { lines.push("\n## Perfil profesional\n", data.perfil); }
+    if (data.educacion.length) {
+      lines.push("\n## Educación");
+      data.educacion.forEach(e => lines.push(`- **${e.grado}** — ${e.institucion} _(${e.periodo})_`));
+    }
+    if (data.certificaciones.length) {
+      lines.push("\n## Certificaciones");
+      data.certificaciones.forEach(c => lines.push(`- ${c.nombre} — ${c.institucion} (${c.fecha})`));
+    }
+    if (data.experiencia.length) {
+      lines.push("\n## Experiencia");
+      data.experiencia.forEach(e => {
+        lines.push(`\n### ${e.rol} — ${e.empresa} _(${e.periodo})_`);
+        if (e.descripcion) lines.push(e.descripcion);
+        bullets(e.logros).forEach(b => lines.push(`- ${b}`));
+      });
+    }
+    if (data.habilidades.length) {
+      lines.push("\n## Habilidades");
+      data.habilidades.forEach(g => lines.push(`- **${g.categoria}:** ${g.items}`));
+    }
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    lines.push(`\n<!--CV_JSON:${b64}-->`);
+    const name = (dp.nombre || "cv-easy").replace(/\s+/g, "_");
+    download(`${name}.md`, lines.join("\n"), "text/markdown");
+  };
   const handleImport = (file: File) => {
     const r = new FileReader();
     r.onload = () => {
@@ -239,8 +285,8 @@ export default function CVBuilder() {
     };
     r.readAsText(file);
   };
-  const reset = () => {
-    if (confirm("¿Borrar todos los datos y empezar de cero?")) {
+  const clearAll = () => {
+    if (confirm("¿Vaciar todos los datos del formulario? Esta acción no se puede deshacer.")) {
       setData(EMPTY_DATA);
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -274,27 +320,28 @@ export default function CVBuilder() {
           <span className="silver-text">cv</span><span className="text-primary">-easy</span>
         </h1>
         <div className="flex items-center gap-2">
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted">
-            {theme === "dark" ? "☀ Claro" : "☾ Oscuro"}
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted">
+            {theme === "dark" ? "☀" : "☾"}
           </button>
           <button onClick={exportPDF} className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-primary text-primary-foreground font-semibold hover:opacity-90">
-            ⬇ Descargar PDF
+            ⬇ PDF
           </button>
         </div>
       </header>
 
-      <section className="px-4 sm:px-6 py-8 sm:py-12 text-center bg-gradient-to-b from-card to-background border-b border-border">
-        <h2 className="text-2xl sm:text-4xl font-black mb-3 max-w-2xl mx-auto leading-tight">
-          Tu currículum profesional, <span className="text-primary">listo en minutos</span>.
+      <section className="px-4 sm:px-6 pt-8 pb-6 sm:pt-14 sm:pb-10 text-center bg-gradient-to-b from-card via-card to-background border-b border-border">
+        <span className="inline-block text-[11px] tracking-widest uppercase text-primary font-bold mb-3 px-3 py-1 rounded-full bg-primary/10">100% gratis · sin registro</span>
+        <h2 className="text-3xl sm:text-5xl font-black mb-3 max-w-2xl mx-auto leading-[1.1]">
+          Crea tu CV profesional <span className="text-primary">en minutos</span>,<br className="hidden sm:block" /> directo desde el móvil.
         </h2>
-        <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto mb-5">
-          Sin registro, sin pagos, sin complicaciones. Edita, visualiza y descarga.
+        <p className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto mb-6 px-2">
+          Editor en vivo, plantillas estilo Harvard y descarga en PDF. Tus datos se guardan solo en tu dispositivo.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <button onClick={loadSample} className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold">Cargar ejemplo</button>
-          <button onClick={reset} className="px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted">Crear desde cero</button>
-          <button onClick={() => importInputRef.current?.click()} className="px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted">
-            Importar
+          <button onClick={exportPDF} className="px-5 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90">⬇ Descargar PDF</button>
+          <button onClick={loadSample} className="px-4 py-2.5 rounded-md border border-border text-sm font-semibold hover:bg-muted">Cargar ejemplo</button>
+          <button onClick={() => importInputRef.current?.click()} className="px-4 py-2.5 rounded-md border border-border text-sm font-semibold hover:bg-muted">
+            ↥ Importar
           </button>
           <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
         </div>
@@ -303,6 +350,14 @@ export default function CVBuilder() {
       <main className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 p-4 sm:p-6 flex-1">
         {/* FORM */}
         <div className="min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Editor del CV</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button onClick={exportJSON} className="text-[11px] px-2.5 py-1 rounded-md border border-border hover:bg-muted">⬇ .json</button>
+              <button onClick={exportMD} className="text-[11px] px-2.5 py-1 rounded-md border border-border hover:bg-muted">⬇ .md</button>
+              <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
+            </div>
+          </div>
           <div className="border border-border rounded-lg p-4 mb-3 bg-card">
             <div className="text-sm font-semibold mb-3">Plantilla</div>
             <div className="grid grid-cols-3 gap-2 mb-4">
@@ -433,7 +488,7 @@ export default function CVBuilder() {
           </Section>
 
           <div className="flex flex-wrap gap-2 mt-4">
-            <button onClick={reset} className="text-xs px-3 py-2 rounded-md border border-border hover:bg-muted">Reiniciar</button>
+            <button onClick={clearAll} className="text-xs px-3 py-2 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
           </div>
         </div>
 
@@ -512,7 +567,7 @@ function HarvardTemplate({ data, mostrar_foto }: { data: CVData; mostrar_foto: b
           {data.educacion.map((e, i) => (
             <div key={i} className="mb-1.5">
               <div className="flex justify-between items-baseline">
-                <span><strong>BS</strong> {e.institucion}</span>
+                <span><strong>{e.institucion}</strong></span>
                 <span className="italic text-[11px]">{e.periodo}</span>
               </div>
               {e.grado && <div className="italic">{e.grado}</div>}
