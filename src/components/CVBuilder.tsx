@@ -394,13 +394,11 @@ export default function CVBuilder() {
           Editor en vivo, plantillas estilo Harvard y descarga en PDF. Tus datos se guardan solo en tu dispositivo.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <button onClick={exportPDF} className="px-5 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90">⬇ Descargar PDF</button>
-          <button onClick={loadSample} className="px-4 py-2.5 rounded-md border border-border text-sm font-semibold hover:bg-muted">Cargar ejemplo</button>
-          <button onClick={() => importInputRef.current?.click()} className="px-4 py-2.5 rounded-md border border-border text-sm font-semibold hover:bg-muted">
-            ↥ Importar
-          </button>
+          <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
+          <Menu label="↥ Importar" items={importItems} />
           <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
         </div>
+
       </section>
 
       <main className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 p-4 sm:p-6 flex-1">
