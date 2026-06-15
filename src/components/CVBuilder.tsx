@@ -572,6 +572,15 @@ function HarvardBlock({ title, children }: { title: string; children: React.Reac
   );
 }
 
+function ModernBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mb-4">
+      <h2 className="text-base font-bold mb-2 uppercase tracking-wide">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
 function ModernTemplate({ data, mostrar_foto }: { data: CVData; mostrar_foto: boolean }) {
   const dp = data.datos_personales;
   return (
