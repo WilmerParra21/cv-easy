@@ -231,6 +231,51 @@ export default function CVBuilder() {
       pagebreak: { mode: ["css", "legacy"] },
     }).from(el).save();
   };
+  const download = (filename: string, content: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const exportJSON = () => {
+    const name = (data.datos_personales.nombre || "cv-easy").replace(/\s+/g, "_");
+    download(`${name}.json`, JSON.stringify(data, null, 2), "application/json");
+  };
+  const exportMD = () => {
+    const dp = data.datos_personales;
+    const lines: string[] = [];
+    lines.push(`# ${dp.nombre || "Tu Nombre"}`);
+    if (dp.puesto) lines.push(`**${dp.puesto}**`);
+    const contact = [dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" · ");
+    if (contact) lines.push(contact);
+    if (data.perfil) { lines.push("\n## Perfil profesional\n", data.perfil); }
+    if (data.educacion.length) {
+      lines.push("\n## Educación");
+      data.educacion.forEach(e => lines.push(`- **${e.grado}** — ${e.institucion} _(${e.periodo})_`));
+    }
+    if (data.certificaciones.length) {
+      lines.push("\n## Certificaciones");
+      data.certificaciones.forEach(c => lines.push(`- ${c.nombre} — ${c.institucion} (${c.fecha})`));
+    }
+    if (data.experiencia.length) {
+      lines.push("\n## Experiencia");
+      data.experiencia.forEach(e => {
+        lines.push(`\n### ${e.rol} — ${e.empresa} _(${e.periodo})_`);
+        if (e.descripcion) lines.push(e.descripcion);
+        bullets(e.logros).forEach(b => lines.push(`- ${b}`));
+      });
+    }
+    if (data.habilidades.length) {
+      lines.push("\n## Habilidades");
+      data.habilidades.forEach(g => lines.push(`- **${g.categoria}:** ${g.items}`));
+    }
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    lines.push(`\n<!--CV_JSON:${b64}-->`);
+    const name = (dp.nombre || "cv-easy").replace(/\s+/g, "_");
+    download(`${name}.md`, lines.join("\n"), "text/markdown");
+  };
   const handleImport = (file: File) => {
     const r = new FileReader();
     r.onload = () => {
@@ -240,8 +285,8 @@ export default function CVBuilder() {
     };
     r.readAsText(file);
   };
-  const reset = () => {
-    if (confirm("¿Borrar todos los datos y empezar de cero?")) {
+  const clearAll = () => {
+    if (confirm("¿Vaciar todos los datos del formulario? Esta acción no se puede deshacer.")) {
       setData(EMPTY_DATA);
       localStorage.removeItem(STORAGE_KEY);
     }
