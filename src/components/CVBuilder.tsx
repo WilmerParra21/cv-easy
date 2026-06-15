@@ -168,7 +168,7 @@ function parseImport(text: string): CVData | null {
 }
 
 type MenuItem = { label: string; onClick?: () => void; icon?: string; disabled?: boolean };
-function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuItem[]; variant?: "primary" | "ghost" }) {
+function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuItem[]; variant?: "primary" | "secondary" | "ghost" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -178,17 +178,19 @@ function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuI
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
   const btnCls = variant === "primary"
-    ? "px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90 inline-flex items-center gap-1.5"
-    : "px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5";
+    ? "h-10 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90 inline-flex items-center gap-1.5"
+    : variant === "secondary"
+    ? "h-10 px-4 py-2 rounded-md bg-gray-400 text-black text-sm font-semibold shadow-lg shadow-gray-400/20 hover:bg-gray-500 inline-flex items-center gap-1.5"
+    : "h-10 px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5";
   return (
     <div ref={ref} className="relative inline-block">
       <button type="button" onClick={() => setOpen(o => !o)} className={btnCls}>{label}<span className="text-[10px] opacity-70">▾</span></button>
       {open && (
-        <div className="absolute right-0 mt-2 min-w-[180px] rounded-md border border-border bg-popover shadow-xl z-30 py-1 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 mt-2 min-w-[180px] rounded-md border border-gray-400 bg-gray-100 shadow-xl z-30 py-1 animate-in fade-in zoom-in-95 duration-100">
           {items.map((it, i) => (
             <button key={i} onClick={() => { setOpen(false); it.onClick?.(); }}
               disabled={it.disabled}
-              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${it.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"}`}>
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 text-black ${it.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-200"}`}>
               {it.icon && <span className="text-base">{it.icon}</span>}{it.label}
             </button>
           ))}
@@ -203,6 +205,7 @@ export default function CVBuilder() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showWelcome, setShowWelcome] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showLoadExampleModal, setShowLoadExampleModal] = useState(false);
   const [overflowWarn, setOverflowWarn] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -374,6 +377,20 @@ export default function CVBuilder() {
     setShowClearModal(false);
   };
 
+  const requestLoadExample = () => {
+    setShowLoadExampleModal(true);
+  };
+
+  const confirmLoadExample = () => {
+    setData(SAMPLE_DATA);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE_DATA)); } catch {}
+    setShowLoadExampleModal(false);
+  };
+
+  const cancelLoadExample = () => {
+    setShowLoadExampleModal(false);
+  };
+
   const downloadItems: MenuItem[] = [
     { 
       label: isExportingPDF ? "Exportando..." : "PDF", 
@@ -392,33 +409,9 @@ export default function CVBuilder() {
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-card bg-black border border-border rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative">
-            <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} aria-label="Cerrar" className="absolute top-4 right-4 w-9 h-9 rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center justify-center transition">
-              ✕
-            </button>
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-white shadow-lg border border-border overflow-hidden flex items-center justify-center mb-1 p-2">
-                <img src="/icon.png" alt="cv-easy" className="w-full h-full object-contain" />
-              </div>
-              <h3 className="text-2xl font-bold tracking-tight">
-                Bienvenido a <span className="text-primary">cv-easy</span>
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
-                Comienza ya tu CV profesional con plantillas listas para descargar. El editor guarda tu progreso en el dispositivo y te permite descargar tu currículum sin instalaciones ni registros.
-              </p>
-              <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:opacity-95">
-                Comenzar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showClearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60">
-          <div className="bg-black border border-white/10 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50">
+          <div className="bg-[#111017] border border-white/10 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
             <div className="flex items-start gap-4">
               <div className="flex-none w-12 h-12 rounded-3xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl">
                 ⚠️
@@ -442,7 +435,33 @@ export default function CVBuilder() {
         </div>
       )}
 
-      <header className="px-4 sm:px-6 py-4 border-b border-border flex items-center justify-between gap-4 bg-card">
+      {showLoadExampleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50">
+          <div className="bg-[#111017] border border-white/10 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-none w-12 h-12 rounded-3xl bg-primary/10 text-primary flex items-center justify-center text-2xl">
+                📥
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold tracking-tight text-white">Cargar ejemplo</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Al cargar el ejemplo se limpiarán todos los datos actuales y se perderá el avance guardado. ¿Estás seguro?
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button onClick={cancelLoadExample} className="w-full sm:w-auto rounded-full border border-white/20 px-4 py-2 text-sm text-white transition hover:bg-white/5">
+                Cancelar
+              </button>
+              <button onClick={confirmLoadExample} className="w-full sm:w-auto rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-95">
+                Cargar ejemplo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <header className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4 bg-card">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex-none w-12 h-12 rounded-3xl bg-white border border-border shadow-sm overflow-hidden p-2 flex items-center justify-center">
             <img src="/icon.png" alt="cv-easy" className="w-full h-full object-contain" />
@@ -471,9 +490,10 @@ export default function CVBuilder() {
         <p className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto mb-6 px-2">
           Editor en vivo, plantillas estilo Harvard y descargalo gratis.
         </p>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center items-center gap-2">
           <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
-          <Menu label="↥ Importar" items={importItems} />
+          <button onClick={requestLoadExample} className="h-10 px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5">Cargar ejemplo</button>
+          <Menu label="↥ Importar" variant="secondary" items={importItems} />
           <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
         </div>
 
