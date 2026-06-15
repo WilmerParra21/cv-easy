@@ -394,7 +394,7 @@ export default function CVBuilder() {
     <div className="min-h-screen flex flex-col relative">
       {showWelcome && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative">
+          <div className="bg-card bg-black border border-border rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative">
             <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} aria-label="Cerrar" className="absolute top-4 right-4 w-9 h-9 rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center justify-center transition">
               ✕
             </button>
@@ -448,7 +448,7 @@ export default function CVBuilder() {
             <img src="/icon.png" alt="cv-easy" className="w-full h-full object-contain" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground truncate">Editor de currículum</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground truncate">Crea tu currículum</p>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
               cv<span className="text-primary">.</span>easy
             </h1>
@@ -469,7 +469,7 @@ export default function CVBuilder() {
           Crea tu CV profesional <span className="text-primary">en minutos</span>
         </h2>
         <p className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto mb-6 px-2">
-          Editor en vivo, plantillas estilo Harvard y descarga en PDF. Tus datos se guardan solo en tu dispositivo.
+          Editor en vivo, plantillas estilo Harvard y descargalo gratis.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
