@@ -513,7 +513,7 @@ function HarvardTemplate({ data, mostrar_foto }: { data: CVData; mostrar_foto: b
           {data.educacion.map((e, i) => (
             <div key={i} className="mb-1.5">
               <div className="flex justify-between items-baseline">
-                <span><strong>BS</strong> {e.institucion}</span>
+                <span><strong>{e.institucion}</strong></span>
                 <span className="italic text-[11px]">{e.periodo}</span>
               </div>
               {e.grado && <div className="italic">{e.grado}</div>}
