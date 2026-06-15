@@ -7,24 +7,24 @@
 /* Root variables */
 :root {
   --radius: 0.5rem;
-  --background: #f5f5f7;
-  --foreground: #1c1c24;
+  --background: #f4f6fb;
+  --foreground: #121827;
   --card: #ffffff;
-  --card-foreground: #1c1c24;
-  --popover: #ffffff;
-  --popover-foreground: #1c1c24;
+  --card-foreground: #121827;
+  --popover: #f8f9fb;
+  --popover-foreground: #121827;
   --primary: #d32f2f;
   --primary-foreground: #ffffff;
   --secondary: #e8e8ec;
   --secondary-foreground: #1c1c24;
-  --muted: #ececf0;
-  --muted-foreground: #5a5a66;
+  --muted: #eef1f7;
+  --muted-foreground: #4b5563;
   --accent: #d32f2f;
   --accent-foreground: #ffffff;
   --destructive: #d32f2f;
   --destructive-foreground: #ffffff;
-  --border: #d8d8de;
-  --input: #d8d8de;
+  --border: #c8d0dc;
+  --input: #f3f5fb;
   --ring: #d32f2f;
   --font-serif: "Times New Roman", Georgia, serif;
   --font-sans: Inter, Arial, Helvetica, sans-serif;
@@ -53,8 +53,71 @@
 }
 
 @layer base {
-  html, body { @apply bg-[var(--background)] text-[var(--foreground)]; }
+  html, body { @apply bg-[var(--background)] text-[var(--foreground)] transition-colors duration-200; }
   body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+}
+
+.theme-toggle-btn {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+}
+
+.theme-toggle-btn:hover,
+.theme-toggle-btn:focus-visible {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  outline: none;
+}
+
+.menu-secondary-btn {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+}
+
+.menu-secondary-btn:hover,
+.menu-secondary-btn:focus-visible {
+  background: var(--muted);
+}
+
+.menu-panel {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-card {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.modal-cancel-btn,
+.modal-secondary-btn {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.modal-cancel-btn:hover,
+.modal-secondary-btn:hover {
+  background: var(--muted);
+}
+
+.modal-confirm-btn,
+.modal-primary-btn {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.modal-confirm-btn:hover,
+.modal-primary-btn:hover {
+  opacity: 0.95;
 }
 
 input[type="text"],

@@ -180,17 +180,17 @@ function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuI
   const btnCls = variant === "primary"
     ? "h-10 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90 inline-flex items-center gap-1.5"
     : variant === "secondary"
-    ? "h-10 px-4 py-2 rounded-md bg-gray-400 text-black text-sm font-semibold shadow-lg shadow-gray-400/20 hover:bg-gray-500 inline-flex items-center gap-1.5"
+    ? "h-10 px-4 py-2 rounded-md menu-secondary-btn text-sm font-semibold shadow-lg shadow-black/10 hover:bg-muted inline-flex items-center gap-1.5"
     : "h-10 px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5";
   return (
     <div ref={ref} className="relative inline-block">
       <button type="button" onClick={() => setOpen(o => !o)} className={btnCls}>{label}<span className="text-[10px] opacity-70">▾</span></button>
       {open && (
-        <div className="absolute right-0 mt-2 min-w-[180px] rounded-md border border-gray-400 bg-gray-100 shadow-xl z-30 py-1 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 mt-2 min-w-[180px] rounded-md menu-panel shadow-xl z-30 py-1 animate-in fade-in zoom-in-95 duration-100">
           {items.map((it, i) => (
             <button key={i} onClick={() => { setOpen(false); it.onClick?.(); }}
               disabled={it.disabled}
-              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 text-black ${it.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-200"}`}>
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 text-[var(--foreground)] ${it.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/80 hover:text-[var(--foreground)]"}`}>
               {it.icon && <span className="text-base">{it.icon}</span>}{it.label}
             </button>
           ))}
@@ -410,24 +410,24 @@ export default function CVBuilder() {
   return (
     <div className="min-h-screen flex flex-col relative">
       {showClearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50">
-          <div className="bg-[#111017] border border-white/10 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
+          <div className="modal-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex-none w-12 h-12 rounded-3xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl">
+              <div className="flex-none w-12 h-12 rounded-3xl bg-red-500/10 text-red-600 flex items-center justify-center text-2xl">
                 ⚠️
               </div>
               <div className="min-w-0">
-                <h2 className="text-xl font-semibold tracking-tight text-white">Limpiar datos del cv?</h2>
+                <h2 className="text-xl font-semibold tracking-tight">Limpiar datos del cv?</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Esta acción eliminará toda la información guardada en el editor. No se podrá deshacer.
                 </p>
               </div>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button onClick={cancelClearAll} className="w-full sm:w-auto rounded-full border border-white/20 px-4 py-2 text-sm text-white transition hover:bg-white/5">
+              <button onClick={cancelClearAll} className="w-full sm:w-auto rounded-full modal-cancel-btn px-4 py-2 text-sm transition">
                 Cancelar
               </button>
-              <button onClick={confirmClearAll} className="w-full sm:w-auto rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500">
+              <button onClick={confirmClearAll} className="w-full sm:w-auto rounded-full modal-primary-btn px-4 py-2 text-sm font-semibold">
                 Vaciar datos
               </button>
             </div>
@@ -436,24 +436,24 @@ export default function CVBuilder() {
       )}
 
       {showLoadExampleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50">
-          <div className="bg-[#111017] border border-white/10 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
+          <div className="modal-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
             <div className="flex items-start gap-4">
               <div className="flex-none w-12 h-12 rounded-3xl bg-primary/10 text-primary flex items-center justify-center text-2xl">
                 📥
               </div>
               <div className="min-w-0">
-                <h2 className="text-xl font-semibold tracking-tight text-white">Cargar ejemplo</h2>
+                <h2 className="text-xl font-semibold tracking-tight">Cargar ejemplo</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Al cargar el ejemplo se limpiarán todos los datos actuales y se perderá el avance guardado. ¿Estás seguro?
                 </p>
               </div>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button onClick={cancelLoadExample} className="w-full sm:w-auto rounded-full border border-white/20 px-4 py-2 text-sm text-white transition hover:bg-white/5">
+              <button onClick={cancelLoadExample} className="w-full sm:w-auto rounded-full modal-cancel-btn px-4 py-2 text-sm transition">
                 Cancelar
               </button>
-              <button onClick={confirmLoadExample} className="w-full sm:w-auto rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-95">
+              <button onClick={confirmLoadExample} className="w-full sm:w-auto rounded-full modal-primary-btn px-4 py-2 text-sm font-semibold">
                 Cargar ejemplo
               </button>
             </div>
@@ -474,7 +474,7 @@ export default function CVBuilder() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-2 rounded-full border border-border hover:bg-muted transition">
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-2 rounded-full border theme-toggle-btn transition">
             {theme === "dark" ? "☀" : "☾"}
           </button>
           <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
