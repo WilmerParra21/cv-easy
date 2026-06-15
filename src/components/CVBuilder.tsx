@@ -488,7 +488,7 @@ export default function CVBuilder() {
           </Section>
 
           <div className="flex flex-wrap gap-2 mt-4">
-            <button onClick={reset} className="text-xs px-3 py-2 rounded-md border border-border hover:bg-muted">Reiniciar</button>
+            <button onClick={clearAll} className="text-xs px-3 py-2 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
           </div>
         </div>
 
