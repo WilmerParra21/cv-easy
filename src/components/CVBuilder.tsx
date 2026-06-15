@@ -167,6 +167,36 @@ function parseImport(text: string): CVData | null {
   return null;
 }
 
+type MenuItem = { label: string; onClick: () => void; icon?: string };
+function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuItem[]; variant?: "primary" | "ghost" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+  const btnCls = variant === "primary"
+    ? "px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90 inline-flex items-center gap-1.5"
+    : "px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5";
+  return (
+    <div ref={ref} className="relative inline-block">
+      <button type="button" onClick={() => setOpen(o => !o)} className={btnCls}>{label}<span className="text-[10px] opacity-70">▾</span></button>
+      {open && (
+        <div className="absolute right-0 mt-2 min-w-[180px] rounded-md border border-border bg-popover shadow-xl z-30 py-1 animate-in fade-in zoom-in-95 duration-100">
+          {items.map((it, i) => (
+            <button key={i} onClick={() => { setOpen(false); it.onClick(); }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2">
+              {it.icon && <span className="text-base">{it.icon}</span>}{it.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CVBuilder() {
   const [data, setData] = useState<CVData>(SAMPLE_DATA);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -174,6 +204,8 @@ export default function CVBuilder() {
   const [overflowWarn, setOverflowWarn] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const importAcceptRef = useRef<string>(".json,.md,.txt");
+
 
   useEffect(() => {
     try {
