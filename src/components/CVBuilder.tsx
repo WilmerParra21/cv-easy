@@ -406,11 +406,8 @@ export default function CVBuilder() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Editor del CV</span>
-            <div className="flex flex-wrap gap-1.5">
-              <button onClick={exportJSON} className="text-[11px] px-2.5 py-1 rounded-md border border-border hover:bg-muted">⬇ .json</button>
-              <button onClick={exportMD} className="text-[11px] px-2.5 py-1 rounded-md border border-border hover:bg-muted">⬇ .md</button>
-              <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
-            </div>
+            <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
+
           </div>
           <div className="border border-border rounded-lg p-4 mb-3 bg-card">
             <div className="text-sm font-semibold mb-3">Plantilla</div>
