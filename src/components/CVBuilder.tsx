@@ -11,9 +11,9 @@ type CVData = {
   habilidades: SkillGroup[];
 };
 
-const STORAGE_KEY = "cv-easy:data";
+const STORAGE_KEY = "cv-easy:data:v2";
 const THEME_KEY = "cv-easy:theme";
-const WELCOME_KEY = "cv-easy:welcome-dismissed";
+const WELCOME_KEY = "cv-easy:welcome-dismissed:v2";
 
 const SAMPLE_DATA: CVData = {
   config: { plantilla: "harvard", fuente: "Times New Roman", mostrar_foto: false },
