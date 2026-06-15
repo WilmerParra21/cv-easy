@@ -19,7 +19,7 @@ const SAMPLE_DATA: CVData = {
   config: { plantilla: "harvard", fuente: "Times New Roman", mostrar_foto: false },
   datos_personales: {
     nombre: "Ana Rodríguez Martínez",
-    puesto: "Ingeniera en Sistemas",
+    puesto: "Licenciada en Administración de Empresas",
     correo: "ana.rodriguez@ejemplo.com",
     telefono: "+34 612 345 678",
     ubicacion: "Madrid, España",
@@ -27,42 +27,43 @@ const SAMPLE_DATA: CVData = {
     foto_base64: "",
   },
   perfil:
-    "Ingeniera en Sistemas con más de 5 años de experiencia diseñando y desarrollando soluciones digitales de alto impacto. Especialista en arquitectura web moderna con React, Node.js y bases de datos relacionales. Combina metodologías ágiles (Scrum) con buenas prácticas de Programación Orientada a Objetos y enfoque UX para entregar productos escalables y mantenibles. Experiencia liderando equipos pequeños, comunicando con stakeholders y traduciendo requisitos de negocio en software funcional bajo control de versiones con Git y gestión en Notion o Jira.",
+    "Licenciada en Administración de Empresas con más de 6 años de experiencia en gestión administrativa, control financiero y coordinación de equipos. Especialista en optimización de procesos internos, planificación presupuestaria y atención a proveedores y clientes corporativos. Combina visión estratégica con un enfoque práctico orientado a resultados, garantizando el cumplimiento de objetivos, la mejora continua y la eficiencia operativa en entornos dinámicos y multidisciplinares.",
   experiencia: [
     {
-      empresa: "Innovatech Solutions, S.L. – Madrid, España",
-      rol: "Desarrolladora Full Stack Senior",
-      periodo: "Marzo 2022 – Presente",
-      descripcion: "Desarrollo Full Stack y liderazgo técnico.",
+      empresa: "Grupo Mercantil Ibérico, S.A. – Madrid, España",
+      rol: "Administradora General",
+      periodo: "Abril 2022 – Presente",
+      descripcion: "Gestión administrativa, financiera y operativa de la oficina central.",
       logros:
-        "Lideré el rediseño de la plataforma principal de e-commerce, incrementando la conversión en un 28%.\nMigré la arquitectura monolítica a microservicios con Node.js y Docker reduciendo costes de infraestructura un 35%.\nMentoricé a 4 desarrolladores junior en buenas prácticas de testing y code review.",
+        "Reorganicé el área administrativa reduciendo los tiempos de facturación en un 30%.\nImplementé un sistema de control de gastos que generó un ahorro anual del 18% en costes operativos.\nCoordiné un equipo de 8 personas entre administración, contabilidad y atención al cliente.\nNegocié contratos con 25 proveedores estratégicos mejorando las condiciones de pago.",
     },
     {
-      empresa: "Freelance, Desarrolladora Web – Remoto",
-      rol: "Consultora Independiente",
-      periodo: "Enero 2020 – Febrero 2022",
-      descripcion: "Desarrollo multiplataforma para clientes internacionales.",
+      empresa: "Distribuciones Castilla, S.L. – Valladolid, España",
+      rol: "Asistente Administrativa Senior",
+      periodo: "Febrero 2019 – Marzo 2022",
+      descripcion: "Soporte administrativo, contable y comercial a la dirección.",
       logros:
-        "Desarrollé una aplicación web de facturación con integración de pasarela de pago para una pyme retail.\nDiseñé y modelé una base de datos PostgreSQL de 5M de registros para un sistema de inventario.\nEntregué 12 proyectos en plazo y presupuesto con valoración media de 4.9/5 en plataformas freelance.",
+        "Gestioné la facturación mensual de más de 400 clientes con cero incidencias contables.\nElaboré informes financieros y de tesorería para la toma de decisiones de la gerencia.\nDigitalicé el archivo documental de la empresa, agilizando consultas internas en un 60%.",
     },
   ],
   educacion: [
     {
-      institucion: "Universidad Politécnica de Madrid",
-      grado: "Grado en Ingeniería Informática",
-      periodo: "Septiembre 2015 – Junio 2019",
+      institucion: "Universidad Complutense de Madrid",
+      grado: "Licenciatura en Administración y Dirección de Empresas",
+      periodo: "Septiembre 2013 – Junio 2018",
     },
   ],
   certificaciones: [
-    { nombre: "AWS Certified Solutions Architect – Associate", institucion: "Amazon Web Services", fecha: "Mayo 2024" },
-    { nombre: "Professional Scrum Master I (PSM I)", institucion: "Scrum.org", fecha: "Noviembre 2023" },
-    { nombre: "Fundamentos UX/UI", institucion: "Platzi", fecha: "Agosto 2022" },
+    { nombre: "Gestión Financiera para No Financieros", institucion: "ESIC Business School", fecha: "Octubre 2024" },
+    { nombre: "Excel Avanzado para Administración", institucion: "Cámara de Comercio de Madrid", fecha: "Marzo 2023" },
+    { nombre: "Atención al Cliente y Negociación", institucion: "CEPADE", fecha: "Junio 2022" },
   ],
   habilidades: [
-    { categoria: "Lenguajes y Frameworks", items: "JavaScript (React, Next.js, Node.js), TypeScript, Python, HTML5, CSS3, Tailwind" },
-    { categoria: "Bases de datos & Cloud", items: "PostgreSQL, MySQL, MongoDB, AWS (EC2, S3, Lambda), Firebase" },
-    { categoria: "Gestión y Productividad", items: "Scrum, Kanban, Jira, Notion, Confluence" },
-    { categoria: "Herramientas Técnicas", items: "Git, GitHub Actions, Docker, Postman, VS Code, Figma" },
+    { categoria: "Gestión Administrativa", items: "Facturación, control de gastos, tesorería, archivo documental, gestión de proveedores" },
+    { categoria: "Contabilidad y Finanzas", items: "Contabilidad básica, conciliaciones bancarias, presupuestos, informes financieros" },
+    { categoria: "Herramientas Ofimáticas", items: "Microsoft Office (Excel avanzado, Word, PowerPoint), Google Workspace, SAP, Sage" },
+    { categoria: "Habilidades Blandas", items: "Liderazgo de equipos, comunicación efectiva, organización, resolución de problemas, atención al detalle" },
+    { categoria: "Idiomas", items: "Español (nativo), Inglés (B2 – First Certificate)" },
   ],
 };
 
