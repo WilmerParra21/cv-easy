@@ -308,6 +308,13 @@ export default function CVBuilder() {
     const name = (dp.nombre || "cv-easy").replace(/\s+/g, "_");
     download(`${name}.md`, lines.join("\n"), "text/markdown");
   };
+  const exportDOCX = () => {
+    const el = previewRef.current?.querySelector(".cv-pages") as HTMLElement | null;
+    if (!el) return;
+    const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>CV</title><style>body{font-family:${data.config.fuente},serif;font-size:12px;color:#000;}h1{font-size:24px;margin:0 0 4px;}h2{font-size:14px;border-bottom:1px solid #000;padding-bottom:2px;margin:12px 0 6px;}ul{margin:4px 0;padding-left:20px;}p{margin:4px 0;}.cv-paper{padding:0;}header{text-align:center;}</style></head><body>${el.innerHTML}</body></html>`;
+    const name = (data.datos_personales.nombre || "cv-easy").replace(/\s+/g, "_");
+    download(`${name}.doc`, html, "application/msword");
+  };
   const handleImport = (file: File) => {
     const r = new FileReader();
     r.onload = () => {
@@ -317,13 +324,31 @@ export default function CVBuilder() {
     };
     r.readAsText(file);
   };
+  const triggerImport = (accept: string) => {
+    importAcceptRef.current = accept;
+    if (importInputRef.current) {
+      importInputRef.current.accept = accept;
+      importInputRef.current.value = "";
+      importInputRef.current.click();
+    }
+  };
   const clearAll = () => {
     if (confirm("¿Vaciar todos los datos del formulario? Esta acción no se puede deshacer.")) {
       setData(EMPTY_DATA);
       localStorage.removeItem(STORAGE_KEY);
     }
   };
-  const loadSample = () => setData(SAMPLE_DATA);
+
+  const downloadItems: MenuItem[] = [
+    { label: "PDF", icon: "📄", onClick: exportPDF },
+    { label: "Word (.doc)", icon: "📝", onClick: exportDOCX },
+    { label: "JSON", icon: "{ }", onClick: exportJSON },
+    { label: "Markdown (.md)", icon: "📑", onClick: exportMD },
+  ];
+  const importItems: MenuItem[] = [
+    { label: "Desde JSON", icon: "{ }", onClick: () => triggerImport(".json") },
+    { label: "Desde Markdown", icon: "📑", onClick: () => triggerImport(".md,.txt") },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -337,7 +362,7 @@ export default function CVBuilder() {
                 <span className="silver-text">Bienvenido a</span> <span className="text-primary">cv-easy</span>
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Crea tu CV profesional gratis, sin registro. El formulario ya viene con datos de ejemplo para que veas cómo se ve cada plantilla. Edita el contenido y descárgalo en PDF cuando termines.
+                Crea tu CV profesional gratis, sin registro. El formulario ya viene con datos de ejemplo para que veas cómo se ve cada plantilla. Edita el contenido y descárgalo cuando termines.
               </p>
               <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} className="bg-primary text-primary-foreground text-sm px-5 py-2 rounded-md font-semibold hover:opacity-90">
                 Comenzar
@@ -347,19 +372,18 @@ export default function CVBuilder() {
         </div>
       )}
 
-      <header className="px-4 sm:px-6 py-4 border-b border-border flex items-center justify-between gap-3 bg-card">
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-          <span className="silver-text">cv</span><span className="text-primary">-easy</span>
+      <header className="px-4 sm:px-6 py-3 border-b border-border flex items-center justify-between gap-3 bg-card">
+        <h1 className="text-lg font-semibold tracking-tight lowercase">
+          cv<span className="text-primary">.</span>easy
         </h1>
         <div className="flex items-center gap-2">
           <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted">
             {theme === "dark" ? "☀" : "☾"}
           </button>
-          <button onClick={exportPDF} className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-primary text-primary-foreground font-semibold hover:opacity-90">
-            ⬇ PDF
-          </button>
+          <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
         </div>
       </header>
+
 
       <section className="px-4 sm:px-6 pt-8 pb-6 sm:pt-14 sm:pb-10 text-center bg-gradient-to-b from-card via-card to-background border-b border-border">
         <span className="inline-block text-[11px] tracking-widest uppercase text-primary font-bold mb-3 px-3 py-1 rounded-full bg-primary/10">100% gratis · sin registro</span>
