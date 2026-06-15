@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type SkillGroup = { categoria: string; items: string };
 type CVData = {
@@ -118,7 +118,7 @@ function Field(props: { label: string; help: string; required?: boolean; childre
   );
 }
 
-const inputCls = "w-full px-3 py-2 rounded-md bg-background border border-input text-sm outline-none focus:border-primary transition";
+const inputCls = "w-full px-4 py-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 function Section({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -167,7 +167,7 @@ function parseImport(text: string): CVData | null {
   return null;
 }
 
-type MenuItem = { label: string; onClick: () => void; icon?: string };
+type MenuItem = { label: string; onClick?: () => void; icon?: string; disabled?: boolean };
 function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuItem[]; variant?: "primary" | "ghost" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -186,8 +186,9 @@ function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuI
       {open && (
         <div className="absolute right-0 mt-2 min-w-[180px] rounded-md border border-border bg-popover shadow-xl z-30 py-1 animate-in fade-in zoom-in-95 duration-100">
           {items.map((it, i) => (
-            <button key={i} onClick={() => { setOpen(false); it.onClick(); }}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2">
+            <button key={i} onClick={() => { setOpen(false); it.onClick?.(); }}
+              disabled={it.disabled}
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${it.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"}`}>
               {it.icon && <span className="text-base">{it.icon}</span>}{it.label}
             </button>
           ))}
@@ -201,7 +202,9 @@ export default function CVBuilder() {
   const [data, setData] = useState<CVData>(SAMPLE_DATA);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
   const [overflowWarn, setOverflowWarn] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const importAcceptRef = useRef<string>(".json,.md,.txt");
@@ -250,18 +253,43 @@ export default function CVBuilder() {
   };
 
   const exportPDF = async () => {
-    const el = previewRef.current?.querySelector(".cv-pages") as HTMLElement | null;
-    if (!el) return;
-    const mod = await import("html2pdf.js");
-    const html2pdf = (mod as any).default ?? mod;
-    html2pdf().set({
-      margin: 0,
-      filename: `${data.datos_personales.nombre || "cv-easy"}.pdf`,
-      image: { type: "jpeg", quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] },
-    }).from(el).save();
+    try {
+      setIsExportingPDF(true);
+      const el = previewRef.current?.querySelector(".cv-pages") as HTMLElement | null;
+      if (!el) {
+        alert("No se encontró el contenido del CV para exportar.");
+        setIsExportingPDF(false);
+        return;
+      }
+      
+      const mod = await import("html2pdf.js");
+      const html2pdf = (mod as any).default ?? mod;
+      
+      await new Promise((resolve, reject) => {
+        html2pdf()
+          .set({
+            margin: 0,
+            filename: `${data.datos_personales.nombre || "cv-easy"}.pdf`,
+            image: { type: "jpeg", quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+            pagebreak: { mode: ["css", "legacy"] },
+          })
+          .from(el)
+          .save()
+          .then(() => {
+            resolve(true);
+          })
+          .catch((err: any) => {
+            reject(err);
+          });
+      });
+    } catch (err) {
+      console.error("Error al exportar PDF:", err);
+      alert("Error al exportar PDF. Revisa la consola para más detalles.");
+    } finally {
+      setIsExportingPDF(false);
+    }
   };
   const download = (filename: string, content: string, mime: string) => {
     const blob = new Blob([content], { type: mime });
@@ -333,14 +361,26 @@ export default function CVBuilder() {
     }
   };
   const clearAll = () => {
-    if (confirm("¿Vaciar todos los datos del formulario? Esta acción no se puede deshacer.")) {
-      setData(EMPTY_DATA);
-      localStorage.removeItem(STORAGE_KEY);
-    }
+    setShowClearModal(true);
+  };
+
+  const confirmClearAll = () => {
+    setData(EMPTY_DATA);
+    localStorage.removeItem(STORAGE_KEY);
+    setShowClearModal(false);
+  };
+
+  const cancelClearAll = () => {
+    setShowClearModal(false);
   };
 
   const downloadItems: MenuItem[] = [
-    { label: "PDF", icon: "📄", onClick: exportPDF },
+    { 
+      label: isExportingPDF ? "Exportando..." : "PDF", 
+      icon: isExportingPDF ? "⏳" : "📄", 
+      onClick: isExportingPDF ? undefined : exportPDF,
+      disabled: isExportingPDF
+    },
     { label: "Word (.doc)", icon: "📝", onClick: exportDOCX },
     { label: "JSON", icon: "{ }", onClick: exportJSON },
     { label: "Markdown (.md)", icon: "📑", onClick: exportMD },
@@ -353,18 +393,22 @@ export default function CVBuilder() {
   return (
     <div className="min-h-screen flex flex-col relative">
       {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200">
-            <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} aria-label="Cerrar" className="absolute top-3 right-3 w-7 h-7 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground inline-flex items-center justify-center">✕</button>
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary inline-flex items-center justify-center mb-3 text-2xl">👋</div>
-              <h3 className="text-lg font-bold mb-2">
-                <span className="silver-text">Bienvenido a</span> <span className="text-primary">cv-easy</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative">
+            <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} aria-label="Cerrar" className="absolute top-4 right-4 w-9 h-9 rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center justify-center transition">
+              ✕
+            </button>
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-white shadow-lg border border-border overflow-hidden flex items-center justify-center mb-1 p-2">
+                <img src="/icon.png" alt="cv-easy" className="w-full h-full object-contain" />
+              </div>
+              <h3 className="text-2xl font-bold tracking-tight">
+                Bienvenido a <span className="text-primary">cv-easy</span>
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Crea tu CV profesional gratis, sin registro. El formulario ya viene con datos de ejemplo para que veas cómo se ve cada plantilla. Edita el contenido y descárgalo cuando termines.
+              <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+                Comienza ya tu CV profesional con plantillas listas para descargar. El editor guarda tu progreso en el dispositivo y te permite descargar tu currículum sin instalaciones ni registros.
               </p>
-              <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} className="bg-primary text-primary-foreground text-sm px-5 py-2 rounded-md font-semibold hover:opacity-90">
+              <button onClick={() => { setShowWelcome(false); localStorage.setItem(WELCOME_KEY, "1"); }} className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:opacity-95">
                 Comenzar
               </button>
             </div>
@@ -372,12 +416,46 @@ export default function CVBuilder() {
         </div>
       )}
 
-      <header className="px-4 sm:px-6 py-3 border-b border-border flex items-center justify-between gap-3 bg-card">
-        <h1 className="text-lg font-semibold tracking-tight lowercase">
-          cv<span className="text-primary">.</span>easy
-        </h1>
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60">
+          <div className="bg-black border border-white/10 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-none w-12 h-12 rounded-3xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl">
+                ⚠️
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold tracking-tight text-white">Limpiar datos del cv?</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Esta acción eliminará toda la información guardada en el editor. No se podrá deshacer.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button onClick={cancelClearAll} className="w-full sm:w-auto rounded-full border border-white/20 px-4 py-2 text-sm text-white transition hover:bg-white/5">
+                Cancelar
+              </button>
+              <button onClick={confirmClearAll} className="w-full sm:w-auto rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500">
+                Vaciar datos
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <header className="px-4 sm:px-6 py-4 border-b border-border flex items-center justify-between gap-4 bg-card">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex-none w-12 h-12 rounded-3xl bg-white border border-border shadow-sm overflow-hidden p-2 flex items-center justify-center">
+            <img src="/icon.png" alt="cv-easy" className="w-full h-full object-contain" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground truncate">Editor de currículum</p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+              cv<span className="text-primary">.</span>easy
+            </h1>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted">
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-2 rounded-full border border-border hover:bg-muted transition">
             {theme === "dark" ? "☀" : "☾"}
           </button>
           <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
@@ -387,8 +465,8 @@ export default function CVBuilder() {
 
       <section className="px-4 sm:px-6 pt-8 pb-6 sm:pt-14 sm:pb-10 text-center bg-gradient-to-b from-card via-card to-background border-b border-border">
         <span className="inline-block text-[11px] tracking-widest uppercase text-primary font-bold mb-3 px-3 py-1 rounded-full bg-primary/10">100% gratis · sin registro</span>
-        <h2 className="text-3xl sm:text-5xl font-black mb-3 max-w-2xl mx-auto leading-[1.1]">
-          Crea tu CV profesional <span className="text-primary">en minutos</span>,<br className="hidden sm:block" /> directo desde el móvil.
+        <h2 className="text-3xl sm:text-5xl font-black mb-3 mx-auto leading-[1.1]">
+          Crea tu CV profesional <span className="text-primary">en minutos</span>
         </h2>
         <p className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto mb-6 px-2">
           Editor en vivo, plantillas estilo Harvard y descarga en PDF. Tus datos se guardan solo en tu dispositivo.
@@ -406,8 +484,7 @@ export default function CVBuilder() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Editor del CV</span>
-            <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
-
+            <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition">🗑 Vaciar datos</button>
           </div>
           <div className="border border-border rounded-lg p-4 mb-3 bg-card">
             <div className="text-sm font-semibold mb-3">Plantilla</div>
@@ -550,7 +627,7 @@ export default function CVBuilder() {
               ⚠ Has alcanzado el límite máximo de 2 páginas. Considera recortar texto.
             </div>
           )}
-          <div ref={previewRef} className="overflow-auto bg-muted/50 p-2 sm:p-4 rounded-lg max-h-[80vh]">
+          <div ref={previewRef} className="preview-panel border border-[var(--border)] bg-[var(--popover)] p-3 sm:p-5 rounded-3xl overflow-visible transition">
             <CVPreview data={debounced} />
           </div>
         </div>

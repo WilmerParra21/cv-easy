@@ -1,40 +1,12 @@
-@import "tailwindcss" source(none);
-@source "../src";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --font-serif: var(--font-serif);
-  --font-sans: var(--font-sans);
-}
-
+/* Root variables */
 :root {
   --radius: 0.5rem;
-  /* Light mode: blanco humo / gris Oxford / rojo acento */
   --background: #f5f5f7;
   --foreground: #1c1c24;
   --card: #ffffff;
@@ -54,7 +26,6 @@
   --border: #d8d8de;
   --input: #d8d8de;
   --ring: #d32f2f;
-  --silver: linear-gradient(135deg, #c0c0c8 0%, #8a8a92 100%);
   --font-serif: "Times New Roman", Georgia, serif;
   --font-sans: Inter, Arial, Helvetica, sans-serif;
 }
@@ -82,9 +53,77 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { background: var(--color-background); color: var(--color-foreground); }
+  html, body { @apply bg-[var(--background)] text-[var(--foreground)]; }
   body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="search"]::placeholder,
+textarea::placeholder {
+  color: var(--muted-foreground);
+  opacity: 1;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.12);
+}
+
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--foreground) 50%), linear-gradient(135deg, var(--foreground) 50%, transparent 50%);
+  background-position: calc(100% - 1rem) calc(50% - 0.15rem), calc(100% - 0.75rem) calc(50% - 0.15rem);
+  background-size: 0.35rem 0.35rem, 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="tel"],
+.dark input[type="search"],
+.dark select,
+.dark textarea {
+  background: #11121a;
+  border-color: #3f4251;
+  color: #e4e7ff;
+}
+
+.dark input[type="text"]::placeholder,
+.dark input[type="email"]::placeholder,
+.dark input[type="tel"]::placeholder,
+.dark input[type="search"]::placeholder,
+.dark textarea::placeholder {
+  color: #8f95b2;
+}
+
+.dark .preview-panel {
+  background: var(--popover);
+  border-color: var(--border);
 }
 
 /* ===== CV Canvas (always white paper) ===== */
@@ -100,11 +139,26 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-.cv-paper h1, .cv-paper h2, .cv-paper h3 { color: #111; }
-.cv-paper a { color: #111; }
+
+.cv-paper h1, .cv-paper h2, .cv-paper h3 {
+  color: #111;
+}
+
+.cv-paper a {
+  color: #111;
+}
 
 @media (max-width: 900px) {
-  .cv-paper { width: 100%; padding: 14mm 10mm; }
+  .cv-paper {
+    width: 100%;
+    padding: 14mm 10mm;
+  }
+}
+
+.cv-pages {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 1rem;
 }
 
 .silver-text {
@@ -114,11 +168,31 @@
   color: transparent;
 }
 
-.tooltip-trigger { position: relative; display: inline-flex; }
-.tooltip-trigger .tt {
-  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
-  background: #111; color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 11px;
-  white-space: normal; width: max-content; max-width: 220px; pointer-events: none;
-  opacity: 0; transition: opacity .15s; z-index: 50;
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
 }
-.tooltip-trigger:hover .tt, .tooltip-trigger:focus-within .tt { opacity: 1; }
+
+.tooltip-trigger .tt {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: normal;
+  width: max-content;
+  max-width: 220px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 50;
+}
+
+.tooltip-trigger:hover .tt,
+.tooltip-trigger:focus-within .tt {
+  opacity: 1;
+}
