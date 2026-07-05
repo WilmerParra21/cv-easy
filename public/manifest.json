@@ -1,0 +1,21 @@
+{
+  "name": "cv.easy - Editor de Currículum Profesional",
+  "short_name": "cv.easy",
+  "description": "Crea tu currículum profesional gratis con editor en tiempo real",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "orientation": "portrait",
+  "categories": ["business", "productivity"],
+  "lang": "es",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

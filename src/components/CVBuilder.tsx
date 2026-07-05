@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useIsMobile } from "../hooks/use-mobile";
 
 type SkillGroup = { categoria: string; items: string };
 type CVData = {
@@ -208,6 +209,8 @@ export default function CVBuilder() {
   const [showLoadExampleModal, setShowLoadExampleModal] = useState(false);
   const [overflowWarn, setOverflowWarn] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const isMobile = useIsMobile();
   const previewRef = useRef<HTMLDivElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const importAcceptRef = useRef<string>(".json,.md,.txt");
@@ -461,6 +464,36 @@ export default function CVBuilder() {
         </div>
       )}
 
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
+          <div className="modal-card rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-xl font-semibold tracking-tight">Vista previa del CV</h2>
+              <button 
+                onClick={() => setShowPreviewModal(false)}
+                className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition"
+                aria-label="Cerrar preview"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-gray-900">
+              <div className="preview-panel border border-[var(--border)] bg-[var(--popover)] p-3 sm:p-5 rounded-3xl overflow-visible transition mx-auto max-w-[210mm]">
+                <CVPreview data={debounced} />
+              </div>
+            </div>
+            <div className="p-4 border-t border-border flex justify-center gap-3">
+              <button 
+                onClick={() => setShowPreviewModal(false)}
+                className="px-6 py-2 rounded-full modal-cancel-btn text-sm transition"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4 bg-card">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex-none w-12 h-12 rounded-3xl bg-white border border-border shadow-sm overflow-hidden p-2 flex items-center justify-center">
@@ -482,26 +515,66 @@ export default function CVBuilder() {
       </header>
 
 
-      <section className="px-4 sm:px-6 pt-8 pb-6 sm:pt-14 sm:pb-10 text-center bg-gradient-to-b from-card via-card to-background border-b border-border">
-        <span className="inline-block text-[11px] tracking-widest uppercase text-primary font-bold mb-3 px-3 py-1 rounded-full bg-primary/10">100% gratis · sin registro</span>
-        <h2 className="text-3xl sm:text-5xl font-black mb-3 mx-auto leading-[1.1]">
-          Crea tu CV profesional <span className="text-primary">en minutos</span>
-        </h2>
-        <p className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto mb-6 px-2">
-          Editor en vivo, plantillas estilo Harvard y descargalo gratis.
-        </p>
-        <div className="flex flex-wrap justify-center items-center gap-2">
-          <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
-          <button onClick={requestLoadExample} className="h-10 px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5">Cargar ejemplo</button>
-          <Menu label="↥ Importar" variant="secondary" items={importItems} />
-          <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
+      <section className="relative px-6 sm:px-8 pt-16 pb-20 sm:pt-20 sm:pb-24 overflow-hidden border-b border-border">
+        {/* Subtle background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl"></div>
         </div>
+        
+        <div className="mx-auto max-w-4xl relative z-10 text-center">
 
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-5 leading-[1.1] tracking-tight">
+            Crea tu curriculum profesional en minutos
+          </h2>
+          
+          <p className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+            Editor intuitivo con vista previa en tiempo real. Elige entre plantillas profesionales y descarga tu CV gratis.
+           
+          </p>
+          
+          <div className="flex flex-wrap justify-center items-center gap-3 mb-8">
+            <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
+            <button onClick={requestLoadExample} className="h-10 px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5">Cargar ejemplo</button>
+            <Menu label="↥ Importar" variant="secondary" items={importItems} />
+            <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
+          </div>
+          
+          <div className="flex flex-wrap justify-center items-center gap-6 max-w-2xl mx-auto">
+            {[
+              { icon: "👁️", text: "Vista previa en vivo" },
+              { icon: "📄", text: "3 plantillas" },
+              { icon: "💾", text: "Guardado local" },
+            ].map((feature) => (
+              <div key={feature.text} className="inline-flex items-center gap-2.5 text-sm font-medium text-foreground/80">
+                <span className="text-lg">{feature.icon}</span>
+                <span>{feature.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      <main className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 p-4 sm:p-6 flex-1">
-        {/* FORM */}
-        <div className="min-w-0">
+      {/* Botón flotante para ver preview en móvil */}
+      {isMobile && (
+        <button
+          onClick={() => setShowPreviewModal(true)}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition hover:scale-105 active:scale-95 font-semibold text-sm animate-pulse hover:animate-none"
+          aria-label="Ver vista previa del CV"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>Ver Preview</span>
+        </button>
+      )}
+
+      <main className="flex-1 relative">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:p-6">
+          {/* Form - scrolls independently on desktop */}
+          <div className="lg:order-1 min-w-0 pb-20 px-4 sm:px-0">
+          {/* FORM */}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Editor del CV</span>
             <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition">🗑 Vaciar datos</button>
@@ -640,18 +713,27 @@ export default function CVBuilder() {
           </div>
         </div>
 
-        {/* PREVIEW */}
-        <div className="min-w-0">
-          {overflowWarn && (
-            <div className="mb-3 p-3 rounded-md bg-primary text-primary-foreground text-sm font-medium">
-              ⚠ Has alcanzado el límite máximo de 2 páginas. Considera recortar texto.
+        {/* Preview - sticky on desktop within main section only */}
+        <div className="hidden lg:block lg:order-2 min-w-0">
+          <div className="sticky top-6 h-[calc(100vh-3rem)]">
+            <div className="h-full flex flex-col">
+              <CVActions data={debounced} />
+              {overflowWarn && (
+                <div className="mb-3 p-3 rounded-md bg-primary text-primary-foreground text-sm font-medium">
+                  ⚠ Has alcanzado el límite máximo de 2 páginas.
+                </div>
+              )}
+              <div ref={previewRef} className="preview-panel border border-[var(--border)] bg-[var(--popover)] p-3 sm:p-4 rounded-2xl transition shadow-lg flex-1 overflow-y-auto">
+                <CVPreview data={debounced} />
+              </div>
             </div>
-          )}
-          <div ref={previewRef} className="preview-panel border border-[var(--border)] bg-[var(--popover)] p-3 sm:p-5 rounded-3xl overflow-visible transition">
-            <CVPreview data={debounced} />
           </div>
         </div>
+        </div>
       </main>
+
+      {/* Mobile preview - only in modal, not visible by default */}
+      {/* Preview is shown only when user clicks the floating button */}
 
       <footer className="border-t border-border px-4 sm:px-6 py-6 text-center text-xs text-muted-foreground bg-card">
         <p>© 2026 cv-easy. Todos los derechos reservados.</p>
@@ -677,6 +759,19 @@ function CVPreview({ data }: { data: CVData }) {
   return (
     <div className="cv-pages" style={style}>
       <div className="cv-paper">{content}</div>
+    </div>
+  );
+}
+
+function CVActions({ data }: { data: CVData }) {
+  return (
+    <div className="flex flex-col gap-2 mb-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vista previa</span>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+          {data.config.plantilla === "harvard" ? "Harvard" : data.config.plantilla === "modern" ? "Moderna" : "Compacta"}
+        </span>
+      </div>
     </div>
   );
 }
@@ -797,21 +892,25 @@ function ModernTemplate({ data, mostrar_foto }: { data: CVData; mostrar_foto: bo
         </div>
       </header>
       {data.perfil && <ModernBlock title="Perfil"><p className="text-justify">{data.perfil}</p></ModernBlock>}
-      <ModernBlock title="Experiencia">
-        {data.experiencia.map((e, i) => (
-          <div key={i} className="mb-3">
-            <div className="flex justify-between"><strong>{e.rol} · {e.empresa}</strong><span className="text-[11px]">{e.periodo}</span></div>
-            {e.descripcion && <p className="italic">{e.descripcion}</p>}
-            {bullets(e.logros).length > 0 && <ul className="list-disc pl-5">{bullets(e.logros).map((b,j)=><li key={j}>{b}</li>)}</ul>}
-          </div>
-        ))}
-      </ModernBlock>
-      <ModernBlock title="Educación">
-        {data.educacion.map((e, i) => <div key={i} className="mb-1"><strong>{e.grado}</strong> — {e.institucion} <span className="text-[11px]">({e.periodo})</span></div>)}
-      </ModernBlock>
+      {data.educacion.length > 0 && (
+        <ModernBlock title="Educación">
+          {data.educacion.map((e, i) => <div key={i} className="mb-1"><strong>{e.grado}</strong> — {e.institucion} <span className="text-[11px]">({e.periodo})</span></div>)}
+        </ModernBlock>
+      )}
       {data.certificaciones.length > 0 && (
         <ModernBlock title="Certificaciones">
           {data.certificaciones.map((c, i) => <div key={i}>{c.nombre} — {c.institucion} ({c.fecha})</div>)}
+        </ModernBlock>
+      )}
+      {data.experiencia.length > 0 && (
+        <ModernBlock title="Experiencia">
+          {data.experiencia.map((e, i) => (
+            <div key={i} className="mb-3">
+              <div className="flex justify-between"><strong>{e.rol} · {e.empresa}</strong><span className="text-[11px]">{e.periodo}</span></div>
+              {e.descripcion && <p className="italic">{e.descripcion}</p>}
+              {bullets(e.logros).length > 0 && <ul className="list-disc pl-5">{bullets(e.logros).map((b,j)=><li key={j}>{b}</li>)}</ul>}
+            </div>
+          ))}
         </ModernBlock>
       )}
       {data.habilidades.length > 0 && (
@@ -832,13 +931,6 @@ function CompactTemplate({ data, mostrar_foto }: { data: CVData; mostrar_foto: b
         <p>{[dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" · ")}</p>
       </header>
       {data.perfil && <p className="mb-2 text-justify">{data.perfil}</p>}
-      <h2 className="font-bold uppercase border-b border-black mt-3 mb-1">Experiencia</h2>
-      {data.experiencia.map((e, i) => (
-        <div key={i} className="mb-1">
-          <strong>{e.rol}</strong>, {e.empresa} <em>({e.periodo})</em>
-          {bullets(e.logros).length > 0 && <ul className="list-disc pl-4">{bullets(e.logros).map((b,j)=><li key={j}>{b}</li>)}</ul>}
-        </div>
-      ))}
       <h2 className="font-bold uppercase border-b border-black mt-3 mb-1">Educación</h2>
       {data.educacion.map((e, i) => <div key={i}><strong>{e.grado}</strong>, {e.institucion} ({e.periodo})</div>)}
       {data.certificaciones.length > 0 && (
@@ -847,6 +939,13 @@ function CompactTemplate({ data, mostrar_foto }: { data: CVData; mostrar_foto: b
           {data.certificaciones.map((c, i) => <div key={i}>{c.nombre} — {c.institucion} ({c.fecha})</div>)}
         </>
       )}
+      <h2 className="font-bold uppercase border-b border-black mt-3 mb-1">Experiencia</h2>
+      {data.experiencia.map((e, i) => (
+        <div key={i} className="mb-1">
+          <strong>{e.rol}</strong>, {e.empresa} <em>({e.periodo})</em>
+          {bullets(e.logros).length > 0 && <ul className="list-disc pl-4">{bullets(e.logros).map((b,j)=><li key={j}>{b}</li>)}</ul>}
+        </div>
+      ))}
       {data.habilidades.length > 0 && (
         <>
           <h2 className="font-bold uppercase border-b border-black mt-3 mb-1">Habilidades</h2>

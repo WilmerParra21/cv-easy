@@ -1,0 +1,12 @@
+# robots.txt para cv.easy
+User-agent: *
+Allow: /
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.json$
+
+# Sitemaps
+Sitemap: https://simple-cv-craft-52.vercel.app/sitemap.xml
+
+# Crawl-delay (opcional, en segundos)
+Crawl-delay: 1
