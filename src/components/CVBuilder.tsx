@@ -466,19 +466,19 @@ export default function CVBuilder() {
 
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
-          <div className="modal-card rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="modal-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[calc(100vh-2rem)] sm:max-h-[90vh] overflow-visible flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <h2 className="text-xl font-semibold tracking-tight">Vista previa del CV</h2>
               <button 
                 onClick={() => setShowPreviewModal(false)}
-                className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition"
+                className="modal-close-btn"
                 aria-label="Cerrar preview"
               >
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-gray-900">
-              <div className="preview-panel border border-[var(--border)] bg-[var(--popover)] p-3 sm:p-5 rounded-3xl overflow-visible transition mx-auto max-w-[210mm]">
+            <div className="flex-1 overflow-auto modal-body bg-gray-100 dark:bg-gray-900">
+              <div className="preview-panel border border-[var(--border)] bg-[var(--popover)] p-3 sm:p-5 rounded-3xl overflow-x-auto overflow-y-auto transition max-w-none mx-auto">
                 <CVPreview data={debounced} />
               </div>
             </div>
