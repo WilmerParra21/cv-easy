@@ -71,4 +71,4 @@ Luego abre `http://localhost:port-desplegado` en tu navegador.
 
 ## 🙌 Autor
 
-Desarrollado por **Wilmer Parra Gómez**.
+Desarrollado por **DevsParra**.

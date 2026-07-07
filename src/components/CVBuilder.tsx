@@ -168,7 +168,107 @@ function parseImport(text: string): CVData | null {
   return null;
 }
 
-type MenuItem = { label: string; onClick?: () => void; icon?: string; disabled?: boolean };
+const IconFile = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+  </svg>
+);
+
+const IconCode = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <path d="M16 18l6-6-6-6" />
+    <path d="M8 6l-6 6 6 6" />
+  </svg>
+);
+
+const IconWord = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+    <path d="M7 7h10" />
+    <path d="M7 12h10" />
+    <path d="M7 17h6" />
+  </svg>
+);
+
+const IconSpinner = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 animate-spin">
+    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+    <path d="M22 12a10 10 0 0 0-10-10" />
+  </svg>
+);
+
+const IconSun = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" />
+    <line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const IconMoon = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+  </svg>
+);
+
+const IconEye = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const IconDocument = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <line x1="9" y1="13" x2="15" y2="13" />
+    <line x1="9" y1="17" x2="15" y2="17" />
+  </svg>
+);
+
+const IconSave = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+);
+
+const IconWarning = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const IconUpload = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+);
+
+const IconTrash = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+);
+
+type MenuItem = { label: string; onClick?: () => void; icon?: JSX.Element | string; disabled?: boolean };
 function Menu({ label, items, variant = "ghost" }: { label: string; items: MenuItem[]; variant?: "primary" | "secondary" | "ghost" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -397,17 +497,17 @@ export default function CVBuilder() {
   const downloadItems: MenuItem[] = [
     { 
       label: isExportingPDF ? "Exportando..." : "PDF", 
-      icon: isExportingPDF ? "⏳" : "📄", 
+      icon: isExportingPDF ? IconSpinner : IconFile, 
       onClick: isExportingPDF ? undefined : exportPDF,
       disabled: isExportingPDF
     },
-    { label: "Word (.doc)", icon: "📝", onClick: exportDOCX },
-    { label: "JSON", icon: "{ }", onClick: exportJSON },
-    { label: "Markdown (.md)", icon: "📑", onClick: exportMD },
+    { label: "Word (.doc)", icon: IconWord, onClick: exportDOCX },
+    { label: "JSON", icon: IconCode, onClick: exportJSON },
+    { label: "Markdown (.md)", icon: IconCode, onClick: exportMD },
   ];
   const importItems: MenuItem[] = [
-    { label: "Desde JSON", icon: "{ }", onClick: () => triggerImport(".json") },
-    { label: "Desde Markdown", icon: "📑", onClick: () => triggerImport(".md,.txt") },
+    { label: "Desde JSON", icon: IconCode, onClick: () => triggerImport(".json") },
+    { label: "Desde Markdown", icon: IconCode, onClick: () => triggerImport(".md,.txt") },
   ];
 
   return (
@@ -416,8 +516,8 @@ export default function CVBuilder() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
           <div className="modal-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex-none w-12 h-12 rounded-3xl bg-red-500/10 text-red-600 flex items-center justify-center text-2xl">
-                ⚠️
+              <div className="flex-none w-12 h-12 rounded-3xl bg-red-500/10 text-red-600 flex items-center justify-center">
+                {IconWarning}
               </div>
               <div className="min-w-0">
                 <h2 className="text-xl font-semibold tracking-tight">Limpiar datos del cv?</h2>
@@ -442,8 +542,8 @@ export default function CVBuilder() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
           <div className="modal-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex-none w-12 h-12 rounded-3xl bg-primary/10 text-primary flex items-center justify-center text-2xl">
-                📥
+              <div className="flex-none w-12 h-12 rounded-3xl bg-primary/10 text-primary flex items-center justify-center">
+                {IconUpload}
               </div>
               <div className="min-w-0">
                 <h2 className="text-xl font-semibold tracking-tight">Cargar ejemplo</h2>
@@ -467,14 +567,17 @@ export default function CVBuilder() {
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
           <div className="modal-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[calc(100vh-2rem)] sm:max-h-[90vh] overflow-visible flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="modal-header flex items-center justify-between px-4 py-3 border-b border-border">
               <h2 className="text-xl font-semibold tracking-tight">Vista previa del CV</h2>
               <button 
                 onClick={() => setShowPreviewModal(false)}
                 className="modal-close-btn"
                 aria-label="Cerrar preview"
               >
-                ✕
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
             <div className="flex-1 overflow-auto modal-body bg-gray-100 dark:bg-gray-900">
@@ -507,10 +610,10 @@ export default function CVBuilder() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-2 rounded-full border theme-toggle-btn transition">
-            {theme === "dark" ? "☀" : "☾"}
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema" className="text-xs px-3 py-2 rounded-full border theme-toggle-btn transition inline-flex items-center justify-center">
+            {theme === "dark" ? IconSun : IconMoon}
           </button>
-          <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
+          <Menu label="Descargar" variant="primary" items={downloadItems} />
         </div>
       </header>
 
@@ -529,22 +632,22 @@ export default function CVBuilder() {
           </h2>
           
           <p className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
-            Editor intuitivo con vista previa en tiempo real. Elige entre plantillas profesionales y descarga tu CV gratis.
+            Editor intuitivo con vista previa en tiempo real. Elige entre plantillas profesionales y descargalo gratis.
            
           </p>
           
           <div className="flex flex-wrap justify-center items-center gap-3 mb-8">
-            <Menu label="⬇ Descargar" variant="primary" items={downloadItems} />
+            <Menu label="Descargar" variant="primary" items={downloadItems} />
             <button onClick={requestLoadExample} className="h-10 px-4 py-2 rounded-md border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5">Cargar ejemplo</button>
-            <Menu label="↥ Importar" variant="secondary" items={importItems} />
+            <Menu label="Importar" variant="secondary" items={importItems} />
             <input ref={importInputRef} type="file" accept=".json,.md,.txt" className="hidden" onChange={e => e.target.files?.[0] && handleImport(e.target.files[0])} />
           </div>
           
           <div className="flex flex-wrap justify-center items-center gap-6 max-w-2xl mx-auto">
             {[
-              { icon: "👁️", text: "Vista previa en vivo" },
-              { icon: "📄", text: "3 plantillas" },
-              { icon: "💾", text: "Guardado local" },
+              { icon: IconEye, text: "Vista Previa" },
+              { icon: IconDocument, text: "Plantillas Profesionales" },
+              { icon: IconSave, text: "Autoguardado (Caché)" },
             ].map((feature) => (
               <div key={feature.text} className="inline-flex items-center gap-2.5 text-sm font-medium text-foreground/80">
                 <span className="text-lg">{feature.icon}</span>
@@ -576,8 +679,11 @@ export default function CVBuilder() {
           <div className="lg:order-1 min-w-0 pb-20 px-4 sm:px-0">
           {/* FORM */}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Editor del CV</span>
-            <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition">🗑 Vaciar datos</button>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Formulario de Curriculum</span>
+            <button onClick={clearAll} className="text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition inline-flex items-center gap-1">
+              <span className="inline-flex">{IconTrash}</span>
+              Vaciar datos
+            </button>
           </div>
           <div className="border border-border rounded-lg p-4 mb-3 bg-card">
             <div className="text-sm font-semibold mb-3">Plantilla</div>
@@ -709,7 +815,10 @@ export default function CVBuilder() {
           </Section>
 
           <div className="flex flex-wrap gap-2 mt-4">
-            <button onClick={clearAll} className="text-xs px-3 py-2 rounded-md border border-primary/40 text-primary hover:bg-primary/10">🗑 Vaciar datos</button>
+            <button onClick={clearAll} className="text-xs px-3 py-2 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition inline-flex items-center gap-2">
+              <span>{IconTrash}</span>
+              Vaciar datos
+            </button>
           </div>
         </div>
 
@@ -739,7 +848,7 @@ export default function CVBuilder() {
         <p>© 2026 cv-easy. Todos los derechos reservados.</p>
         <p className="mt-1">
           Desarrollado por{" "}
-          <a href="https://github.com/WilmerParra21" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">Wilmer Parra Gómez</a>
+          <a href="https://github.com/WilmerParra21" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">DevsParra</a>
         </p>
       </footer>
     </div>
