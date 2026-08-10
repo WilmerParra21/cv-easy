@@ -3,61 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet" />
     
     <!-- Primary Meta Tags -->
-    <title>cv.easy | Llena tu CV</title>
-    <meta name="title" content="cv.easy | Editor de CV" />
-    <meta name="description" content="Crea tu currículum profesional gratis con nuestro editor en tiempo real. 3 plantillas modernas, descarga en PDF, Word y Markdown. Sin registro ni límites. 100% gratuito." />
-    <meta name="keywords" content="crear cv gratis, curriculum vitae online, generador de cv, plantillas de curriculum, hacer curriculum, cv profesional, descargar cv pdf, editor de cv gratis, curriculum vitae gratis, hacer cv online" />
-    <meta name="author" content="cv.easy" />
+    <title>Crear CV Gratis Online | CVrap</title>
+    <meta name="title" content="Crear CV Gratis Online | CVrap" />
+    <meta name="description" content="Crea tu currículum profesional gratis en minutos. Usa plantillas ATS, edita con vista previa en tiempo real y descarga tu CV en PDF, Word, JSON o Markdown." />
+    <meta name="keywords" content="crear cv gratis, curriculum vitae online, generador de cv, plantillas de curriculum, hacer curriculum, cv profesional, descargar cv pdf, editor de cv gratis, curriculum vitae gratis, hacer cv online, cvrap" />
+    <meta name="author" content="CVrap - DevsParra" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <link rel="canonical" href="https://simple-cv-craft-52.vercel.app/" />
+    <link rel="canonical" href="https://cv-easy-eight.vercel.app/" />
+    <link rel="alternate" hreflang="es" href="https://cv-easy-eight.vercel.app/" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://simple-cv-craft-52.vercel.app/" />
-    <meta property="og:site_name" content="cv.easy" />
-    <meta property="og:title" content="cv.easy - Crea tu Currículum Profesional Gratis Online" />
-    <meta property="og:description" content="Editor de CV en tiempo real con plantillas profesionales. Descarga en PDF, Word y Markdown. Sin registro. 100% gratuito." />
-    <meta property="og:image" content="https://simple-cv-craft-52.vercel.app/icon.png" />
+    <meta property="og:url" content="https://cv-easy-eight.vercel.app/" />
+    <meta property="og:site_name" content="CVrap" />
+    <meta property="og:title" content="Crear CV Gratis Online | CVrap" />
+    <meta property="og:description" content="Crea tu currículum profesional con plantillas ATS, vista previa en tiempo real y descarga en varios formatos." />
+    <meta property="og:image" content="https://cv-easy-eight.vercel.app/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="CVrap, creador de currículum profesional" />
     <meta property="og:locale" content="es_ES" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://simple-cv-craft-52.vercel.app/" />
-    <meta name="twitter:title" content="cv.easy - Crea tu Currículum Profesional Gratis Online" />
-    <meta name="twitter:description" content="Editor de CV en tiempo real con plantillas profesionales. Descarga en PDF, Word y Markdown. Sin registro. 100% gratuito." />
-    <meta name="twitter:image" content="https://simple-cv-craft-52.vercel.app/icon.png" />
+    <meta name="twitter:url" content="https://cv-easy-eight.vercel.app/" />
+    <meta name="twitter:title" content="Crear CV Gratis Online | CVrap" />
+    <meta name="twitter:description" content="Crea tu currículum profesional con plantillas ATS, vista previa en tiempo real y descarga en varios formatos." />
+    <meta name="twitter:image" content="https://cv-easy-eight.vercel.app/og-image.svg" />
+    <meta name="twitter:image:alt" content="CVrap, creador de currículum profesional" />
     
     <!-- Additional SEO -->
-    <meta name="theme-color" content="#dc2626" />
+    <meta name="theme-color" content="#0b2a72" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="cv.easy" />
-    <meta name="application-name" content="cv.easy" />
-    <meta name="msapplication-TileColor" content="#dc2626" />
+    <meta name="apple-mobile-web-app-title" content="CVrap" />
+    <meta name="application-name" content="CVrap" />
+    <meta name="msapplication-TileColor" content="#0b2a72" />
     <meta name="format-detection" content="telephone=no" />
     
     <!-- Vercel Analytics (opcional - descomenta cuando despliegues) -->
     <!-- <script defer src="/_vercel/insights/script.js"></script> -->
     
     <!-- Icons -->
-    <link rel="icon" type="image/png" href="/icon.png" />
-    <link rel="apple-touch-icon" href="/icon.png" />
-    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="/cvrap-icon.svg" />
+    <link rel="apple-touch-icon" href="/cvrap-icon.svg" />
+    <link rel="shortcut icon" href="/cvrap-icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/manifest.json" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "cv.easy",
-      "alternateName": "CV Easy",
-      "url": "https://simple-cv-craft-52.vercel.app",
-      "description": "Editor de currículum profesional gratuito con vista previa en tiempo real, plantillas modernas y descarga en múltiples formatos.",
+      "name": "CVrap",
+      "alternateName": "CVrap - CV Builder",
+      "url": "https://cv-easy-eight.vercel.app/",
+      "image": "https://cv-easy-eight.vercel.app/og-image.svg",
+      "description": "Creador de currículum profesional gratis con plantillas ATS, vista previa en tiempo real y descarga en PDF, Word, JSON y Markdown.",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Any",
       "offers": {
@@ -67,26 +76,40 @@
       },
       "featureList": [
         "Vista previa en tiempo real",
-        "3 plantillas profesionales (Harvard, Moderna, Compacta)",
+        "5 plantillas profesionales y compatibles con ATS",
         "Descarga en PDF, Word, JSON y Markdown",
         "Guardado automático local",
         "Sin registro requerido",
         "100% gratuito"
       ],
       "browserRequirements": "Requires JavaScript. Requires HTML5.",
-      "softwareVersion": "1.0",
+      "softwareVersion": "2.0",
       "author": {
         "@type": "Person",
         "name": "Wilmer Parra Gómez",
         "url": "https://github.com/WilmerParra21"
       },
       "datePublished": "2026-01-01",
+      "dateModified": "2026-08-09",
       "inLanguage": "es"
     }
     </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main>
+        <h1>Crear un currículum profesional gratis</h1>
+        <p>CVrap es un creador de CV online que permite diseñar, editar y descargar tu currículum en minutos.</p>
+        <h2>Funciones de CVrap</h2>
+        <ul>
+          <li>Plantillas profesionales y compatibles con sistemas ATS.</li>
+          <li>Vista previa del currículum en tiempo real.</li>
+          <li>Descarga en PDF, Word, JSON y Markdown.</li>
+          <li>Guardado local y respaldo en Google Drive.</li>
+        </ul>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

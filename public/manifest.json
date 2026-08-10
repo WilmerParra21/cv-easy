@@ -1,20 +1,20 @@
 {
-  "name": "cv.easy - Editor de Currículum Profesional",
-  "short_name": "cv.easy",
+  "name": "CVrap - Editor de Currículum Profesional",
+  "short_name": "CVrap",
   "description": "Crea tu currículum profesional gratis con editor en tiempo real",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#dc2626",
+  "theme_color": "#0b2a72",
   "orientation": "portrait",
   "categories": ["business", "productivity"],
   "lang": "es",
   "dir": "ltr",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "/cvrap-icon.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>CVrap</title>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1649b8"/><stop offset="1" stop-color="#071b55"/></linearGradient>
+    <linearGradient id="check" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f80ed"/><stop offset="1" stop-color="#0757d8"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#surface)"/>
+  <path d="M166 118h142l62 62v204c0 12-10 22-22 22H166c-12 0-22-10-22-22V140c0-12 10-22 22-22Z" fill="#fff"/>
+  <path d="M308 118v55c0 10 8 18 18 18h44" fill="#f51e3b"/>
+  <circle cx="208" cy="220" r="28" fill="#1649b8"/><path d="M171 286c0-22 17-39 39-39s39 17 39 39v8h-78v-8Z" fill="#1649b8"/>
+  <rect x="272" y="208" width="68" height="12" rx="6" fill="#0b2a72"/><rect x="272" y="236" width="54" height="12" rx="6" fill="#0b2a72"/><rect x="171" y="324" width="169" height="12" rx="6" fill="#0b2a72"/>
+  <path d="m176 392 34 30 82-88" fill="none" stroke="url(#check)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M116 252H62m54 40H42m74 40H70" stroke="#3b82f6" stroke-width="12" stroke-linecap="round"/>
+</svg>

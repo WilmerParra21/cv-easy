@@ -4,7 +4,7 @@ const CVBuilder = lazy(() => import("./components/CVBuilder"));
 
 export default function App() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Cargando cv-easy…</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Cargando CV Help…</div>}>
       <CVBuilder />
     </Suspense>
   );

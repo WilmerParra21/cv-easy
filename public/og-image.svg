@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">CVrap — Crear CV gratis online</title>
+  <desc id="desc">Crea tu currículum profesional en minutos con CVrap.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080c14"/>
+      <stop offset="1" stop-color="#101b32"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1649b8"/>
+      <stop offset="1" stop-color="#071b55"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1080" cy="-30" r="300" fill="#193b87" opacity=".12"/>
+  <circle cx="40" cy="650" r="260" fill="#1d4ed8" opacity=".09"/>
+  <rect x="92" y="92" width="92" height="92" rx="24" fill="url(#mark)"/>
+  <path d="M121 115h29l13 13v39c0 3-2 6-6 6h-36c-3 0-6-3-6-6v-46c0-3 3-6 6-6Z" fill="#fff"/>
+  <path d="M150 115v12c0 2 2 4 4 4h9" fill="#f51e3b"/>
+  <circle cx="130" cy="137" r="6" fill="#1649b8"/>
+  <path d="M122 151c0-5 4-8 8-8s8 3 8 8v2h-16v-2Z" fill="#1649b8"/>
+  <rect x="143" y="134" width="14" height="3" rx="1.5" fill="#0b2a72"/>
+  <path d="m122 165 7 6 18-20" fill="none" stroke="#2f80ed" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="212" y="153" fill="#f8fafc" font-family="Manrope, Arial, sans-serif" font-size="48" font-weight="800">CVrap</text>
+  <text x="94" y="330" fill="#f8fafc" font-family="Playfair Display, Georgia, serif" font-size="80" font-style="italic" font-weight="500">Crea tu CV</text>
+  <text x="94" y="420" fill="#f8fafc" font-family="Playfair Display, Georgia, serif" font-size="80" font-style="italic" font-weight="500">en minutos</text>
+  <rect x="98" y="470" width="58" height="5" rx="2.5" fill="#3b82f6"/>
+  <text x="94" y="520" fill="#91a1bd" font-family="Manrope, Arial, sans-serif" font-size="24">Plantillas profesionales · Vista previa en tiempo real · Descarga PDF</text>
+</svg>
