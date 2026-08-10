@@ -1680,7 +1680,6 @@ export default function CVBuilder() {
             {[
               { icon: IconEye, text: "Vista Previa en Vivo" },
               { icon: IconDocument, text: tr("professionalTemplates") },
-              { icon: IconSave, text: tr("autosave") },
               { icon: "✓", text: tr("atsSecure") },
             ].map((feature) => (
               <div

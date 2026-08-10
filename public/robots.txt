@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://cv-easy-eight.vercel.app/sitemap.xml
+Sitemap: https://cvrap.devsparra.com/sitemap.xml
