@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useIsMobile } from "../hooks/use-mobile";
 import { saveCVToGoogleDrive } from "../services/googleDrive";
 
 type SkillGroup = { categoria: string; items: string };
-type CVTemplateId = "harvard" | "modern" | "compact" | "creative" | "gradient";
+type CVTemplateId = "harvard" | "modern" | "compact" | "creative" | "gradient" | "classic";
 type CVData = {
   config: { plantilla: CVTemplateId; fuente: string; mostrar_foto: boolean; accentColor: string };
   datos_personales: {
@@ -12,8 +12,14 @@ type CVData = {
     correo: string;
     telefono: string;
     ubicacion: string;
-    linkedin: string;
+    fecha_nacimiento: string;
     foto_base64: string;
+  };
+  redes_sociales: {
+    linkedin: string;
+    sitio_web: string;
+    github: string;
+    behance: string;
   };
   perfil: string;
   experiencia: Array<{
@@ -47,7 +53,7 @@ const SAMPLE_DATA: CVData = {
     correo: "ana.rodriguez@ejemplo.com",
     telefono: "+34 612 345 678",
     ubicacion: "Madrid, España",
-    linkedin: "ana-rodriguez-martinez",
+    fecha_nacimiento: "15 de mayo de 1990",
     foto_base64: "",
   },
   perfil:
@@ -111,6 +117,12 @@ const SAMPLE_DATA: CVData = {
     },
     { categoria: "Idiomas", items: "Español (nativo), Inglés (B2 – First Certificate)" },
   ],
+  redes_sociales: {
+    linkedin: "ana-rodriguez-martinez",
+    sitio_web: "https://ana-rodriguez.ejemplo.com",
+    github: "ana-rodriguez",
+    behance: "anarodriguez",
+  },
 };
 
 const EMPTY_DATA: CVData = {
@@ -126,7 +138,7 @@ const EMPTY_DATA: CVData = {
     correo: "",
     telefono: "",
     ubicacion: "",
-    linkedin: "",
+    fecha_nacimiento: "",
     foto_base64: "",
   },
   perfil: "",
@@ -134,6 +146,12 @@ const EMPTY_DATA: CVData = {
   educacion: [{ institucion: "", grado: "", periodo: "" }],
   certificaciones: [],
   habilidades: [],
+  redes_sociales: {
+    linkedin: "",
+    sitio_web: "",
+    github: "",
+    behance: "",
+  },
 };
 
 const TEMPLATE_OPTIONS: Array<{
@@ -154,177 +172,12 @@ const TEMPLATE_OPTIONS: Array<{
     labelKey: "templateGradientLabel",
     descriptionKey: "templateGradientDescription",
   },
+  {
+    id: "classic",
+    labelKey: "templateClassicLabel",
+    descriptionKey: "templateClassicDescription",
+  },
 ];
-
-const TEMPLATE_SAMPLE_DATA: Record<CVTemplateId, CVData> = {
-  harvard: SAMPLE_DATA,
-  modern: {
-    ...SAMPLE_DATA,
-    config: { ...SAMPLE_DATA.config, plantilla: "modern" },
-    datos_personales: {
-      nombre: "Martín Gómez Pérez",
-      puesto: "Especialista en Marketing Digital",
-      correo: "martin.gomez@ejemplo.com",
-      telefono: "+34 622 123 456",
-      ubicacion: "Barcelona, España",
-      linkedin: "martin-gomez-marketing",
-      foto_base64: "",
-    },
-    perfil:
-      "Profesional en marketing digital con experiencia en generación de leads, campañas de publicidad online y análisis de métricas. Enfocado en la mejora del ROI mediante contenido estratégico, automatización y optimización de funnels.",
-    experiencia: [
-      {
-        empresa: "Agencia Nova Marketing – Barcelona, España",
-        rol: "Coordinador de Marketing Digital",
-        periodo: "Enero 2023 – Presente",
-        descripcion:
-          "Lidero campañas de inbound marketing y publicidad digital para clientes B2B y B2C.",
-        logros:
-          "Aumenté el tráfico orgánico en un 45% en 6 meses mediante estrategia SEO y contenido de valor.\nReduje el coste por lead en un 30% mediante optimización de campañas en Google Ads y Meta Ads.",
-      },
-    ],
-    educacion: [
-      {
-        institucion: "Universidad de Barcelona",
-        grado: "Grado en Marketing y Publicidad",
-        periodo: "Septiembre 2015 – Junio 2019",
-      },
-    ],
-    certificaciones: [
-      { nombre: "Google Ads Search", institucion: "Google", fecha: "2024" },
-      { nombre: "Analítica Web", institucion: "Google Analytics Academy", fecha: "2023" },
-    ],
-    habilidades: [
-      {
-        categoria: "Marketing Digital",
-        items: "SEO, SEM, Google Analytics, Meta Ads, email marketing",
-      },
-      { categoria: "Estrategia", items: "Automatización, embudos de conversión, contenidos, CRO" },
-    ],
-  },
-  compact: {
-    ...SAMPLE_DATA,
-    config: { ...SAMPLE_DATA.config, plantilla: "compact" },
-    datos_personales: {
-      nombre: "Lucía Salas León",
-      puesto: "Desarrolladora Full Stack",
-      correo: "lucia.salas@ejemplo.com",
-      telefono: "+34 610 987 654",
-      ubicacion: "Valencia, España",
-      linkedin: "lucia-salas-fullstack",
-      foto_base64: "",
-    },
-    perfil:
-      "Desarrolladora full stack especializada en aplicaciones web con React, Node.js y bases de datos relacionales. Apasionada por el rendimiento, el diseño accesible y la escritura de código escalable.",
-    experiencia: [
-      {
-        empresa: "TechWave Solutions – Valencia, España",
-        rol: "Desarrolladora Full Stack",
-        periodo: "Marzo 2022 – Presente",
-        descripcion:
-          "Desarrollo de productos SaaS y plataformas internas para clientes internacionales.",
-        logros:
-          "Diseñé y construí un panel administrativo que redujo el tiempo de gestión en un 25%.\nImplementé APIs RESTful y mejoras de rendimiento que aceleraron la carga en un 40%.",
-      },
-    ],
-    educacion: [
-      {
-        institucion: "Politécnica de Valencia",
-        grado: "Grado en Ingeniería Informática",
-        periodo: "Septiembre 2014 – Junio 2018",
-      },
-    ],
-    certificaciones: [
-      { nombre: "AWS Cloud Practitioner", institucion: "Amazon Web Services", fecha: "2024" },
-    ],
-    habilidades: [
-      { categoria: "Tecnologías", items: "React, TypeScript, Node.js, PostgreSQL, Docker" },
-      { categoria: "Metodologías", items: "Agile, TDD, DevOps, CI/CD" },
-    ],
-  },
-  creative: {
-    ...SAMPLE_DATA,
-    config: { ...SAMPLE_DATA.config, plantilla: "creative" },
-    datos_personales: {
-      nombre: "Noelia Ruiz Castillo",
-      puesto: "Diseñadora UX/UI Creativa",
-      correo: "noelia.ruiz@ejemplo.com",
-      telefono: "+34 611 234 789",
-      ubicacion: "Sevilla, España",
-      linkedin: "noelia-ruiz-design",
-      foto_base64: "",
-    },
-    perfil:
-      "Diseñadora UX/UI con experiencia en productos digitales, branding y diseño de interfaces modernas. Combina creatividad con investigación de usuario para entregar experiencias memorables.",
-    experiencia: [
-      {
-        empresa: "Studio Brío – Sevilla, España",
-        rol: "Diseñadora UX/UI Senior",
-        periodo: "Mayo 2022 – Presente",
-        descripcion:
-          "Diseño de interfaces y experiencia de usuario para aplicaciones móviles y webs de retail.",
-        logros:
-          "Aumenté la conversión de formularios en un 22% tras rediseñar la experiencia de onboarding.\nCreé un sistema de diseño que mejoró la consistencia visual y la velocidad de entrega de propuestas.",
-      },
-    ],
-    educacion: [
-      {
-        institucion: "Escuela Superior de Diseño de Madrid",
-        grado: "Máster en Diseño de Experiencia de Usuario",
-        periodo: "Septiembre 2020 – Junio 2021",
-      },
-    ],
-    certificaciones: [
-      { nombre: "UX Design", institucion: "Interaction Design Foundation", fecha: "2023" },
-    ],
-    habilidades: [
-      { categoria: "Diseño", items: "Figma, prototipado, diseño visual, investigación UX" },
-      { categoria: "Herramientas", items: "Sketch, Adobe XD, Miro, Zeplin" },
-    ],
-  },
-  gradient: {
-    ...SAMPLE_DATA,
-    config: { ...SAMPLE_DATA.config, plantilla: "gradient" },
-    datos_personales: {
-      nombre: "Felipe Cortés Navarro",
-      puesto: "Product Manager",
-      correo: "felipe.cortes@ejemplo.com",
-      telefono: "+34 623 456 789",
-      ubicacion: "Bilbao, España",
-      linkedin: "felipe-cortes-product",
-      foto_base64: "",
-    },
-    perfil:
-      "Product Manager con experiencia en diseño de producto, priorización de roadmap y coordinación de equipos multidisciplinares. Enfocado en crear soluciones que aporten valor real al usuario.",
-    experiencia: [
-      {
-        empresa: "Innovea Labs – Bilbao, España",
-        rol: "Product Manager",
-        periodo: "Julio 2023 – Presente",
-        descripcion: "Dirijo el desarrollo de productos digitales en mercados fintech y ecommerce.",
-        logros:
-          "Lideré el lanzamiento de un nuevo producto que alcanzó los objetivos de adopción en el primer trimestre.\nMejoré la comunicación entre diseño y desarrollo con ceremonias ágiles enfocadas en resultado.",
-      },
-    ],
-    educacion: [
-      {
-        institucion: "Universidad del País Vasco",
-        grado: "Grado en Administración de Empresas",
-        periodo: "Septiembre 2013 – Junio 2017",
-      },
-    ],
-    certificaciones: [
-      { nombre: "Scrum Product Owner", institucion: "Scrum Alliance", fecha: "2024" },
-    ],
-    habilidades: [
-      {
-        categoria: "Gestión de Producto",
-        items: "Roadmap, estrategia, priorización, OKR, user stories",
-      },
-      { categoria: "Comunicación", items: "Stakeholders, workshops, research, métricas" },
-    ],
-  },
-};
 
 type Language = "es" | "en";
 type TranslationKey = keyof (typeof TRANSLATIONS)["es"];
@@ -369,15 +222,28 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     showPhotoCVDark: "Mostrar foto en el CV",
     uploadPhoto: "Subir foto",
     removePhoto: "Quitar foto",
-    photoHelp: "JPG, PNG. Aparecerá en la vista previa del CV.",
+    photoHelp:
+      "JPG o PNG. Usa una foto profesional: fondo neutro, ropa adecuada y buena iluminación.",
+    photoSuggestions:
+      "Sugerencia: fondo neutro, sin accesorios llamativos, mirando a cámara y recortada desde los hombros.",
     importFromJSON: "Desde JSON",
     importFromMarkdown: "Desde Markdown",
     email: "Correo electrónico",
     phone: "Teléfono",
     location: "Ubicación",
     linkedin: "LinkedIn (usuario)",
+    birthDate: "Fecha de nacimiento (opcional)",
+    birthDateHelp: "Solo si lo deseas incluir en el CV.",
+    sectionSocial: "Redes Sociales y Enlaces",
+    website: "Sitio web",
+    github: "GitHub",
+    behance: "Behance",
+    websiteHelp: "https://tusitio.ejemplo.com",
+    githubHelp: "@usuario o enlace completo",
+    behanceHelp: "@usuario o enlace completo",
     sectionPersonal: "Datos Personales",
     sectionProfile: "Perfil Profesional",
+    sectionSocialLinks: "Redes Sociales",
     sectionEducation: "Educación",
     sectionCertifications: "Certificaciones",
     sectionExperience: "Experiencia",
@@ -401,7 +267,6 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     fieldSkillsItems: "Habilidades (separadas por comas)",
     nameHelp: "Tu nombre y apellido tal como quieres que aparezcan.",
     jobHelp: "El trabajo al que aspiras.",
-    photoHelp: "JPG, PNG. Aparecerá en la vista previa del CV.",
     emailHelp: "Un email que revises a diario.",
     phoneHelp: "Incluye código de país.",
     locationHelp: "Ciudad y país.",
@@ -425,6 +290,12 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     phoneLabel: "Teléfono",
     locationLabel: "Ubicación",
     linkedinLabel: "LinkedIn",
+    birthDateLabel: "Fecha de nacimiento",
+    websiteLabel: "Web",
+    githubLabel: "GitHub",
+    behanceLabel: "Behance",
+    defaultName: "Tu Nombre",
+    harvardFieldDisabled: "Campo no compatible con el formato Harvard.",
     footerCopyright: "© 2026 CVrap. Todos los derechos reservados.",
     footerMadeBy: "Desarrollado por",
     addEducation: "+ Agregar educación",
@@ -437,8 +308,15 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     remove: "Eliminar",
     cancel: "Cancelar",
     confirmClear: "Vaciar datos",
+    gotIt: "Entendido",
     confirmClearText:
       "Al vaciar los datos se eliminará todo el contenido actual y no se podrá recuperar. ¿Estás seguro?",
+    importSuccessTitle: "¡Importación exitosa!",
+    importSuccessText:
+      "Tu currículum se ha importado correctamente. Ahora puedes seguir editándolo sin problema.",
+    exportSuccessTitle: "¡Descarga completada!",
+    exportSuccessText:
+      "Tu currículum se ha descargado correctamente. Revisa tu carpeta de descargas para ver el archivo.",
     loadExampleConfirmTitle: "Cargar ejemplo",
     loadExampleConfirmText:
       "Al cargar el ejemplo se limpiarán todos los datos actuales y se perderá el avance guardado. ¿Estás seguro?",
@@ -456,6 +334,8 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     templateCreativeDescription: "Panel lateral creativo con estilo moderno.",
     templateGradientLabel: "Gradient",
     templateGradientDescription: "Cabecera degradada y secciones sofisticadas.",
+    templateClassicLabel: "Clásico",
+    templateClassicDescription: "Formato tradicional tipo Vitae, limpio y ATS-friendly.",
   },
   en: {
     appTitle: "CVrap",
@@ -486,15 +366,28 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     showPhotoCVDark: "Show photo on CV",
     uploadPhoto: "Upload photo",
     removePhoto: "Remove photo",
-    photoHelp: "JPG, PNG. It will appear in the CV preview.",
+    photoHelp:
+      "JPG or PNG. Use a professional photo: neutral background, appropriate clothing, good lighting.",
+    photoSuggestions:
+      "Tip: neutral background, no flashy accessories, looking at the camera, cropped from the shoulders up.",
     importFromJSON: "From JSON",
     importFromMarkdown: "From Markdown",
     email: "Email",
     phone: "Phone",
     location: "Location",
     linkedin: "LinkedIn (handle)",
+    birthDate: "Date of birth (optional)",
+    birthDateHelp: "Include it in your CV only if you want.",
+    sectionSocial: "Social Networks and Links",
+    website: "Website",
+    github: "GitHub",
+    behance: "Behance",
+    websiteHelp: "https://yoursite.example.com",
+    githubHelp: "@username or full URL",
+    behanceHelp: "@username or full URL",
     sectionPersonal: "Personal Information",
     sectionProfile: "Professional profile",
+    sectionSocialLinks: "Social Networks",
     sectionEducation: "Education",
     sectionCertifications: "Certifications",
     sectionExperience: "Experience",
@@ -518,7 +411,6 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     fieldSkillsItems: "Skills (comma separated)",
     nameHelp: "Your full name as it should appear.",
     jobHelp: "The job you are applying for.",
-    photoHelp: "JPG, PNG. It will appear in the CV preview.",
     emailHelp: "An email you check every day.",
     phoneHelp: "Include your country code.",
     locationHelp: "City and country.",
@@ -541,6 +433,12 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     phoneLabel: "Phone",
     locationLabel: "Location",
     linkedinLabel: "LinkedIn",
+    birthDateLabel: "Date of birth",
+    websiteLabel: "Web",
+    githubLabel: "GitHub",
+    behanceLabel: "Behance",
+    defaultName: "Your Name",
+    harvardFieldDisabled: "Field not compatible with Harvard format.",
     footerCopyright: "© 2026 CVrap. All rights reserved.",
     footerMadeBy: "Built by",
     addEducation: "+ Add education",
@@ -549,13 +447,18 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     addSkillCategory: "+ Add category",
     exporting: "Exporting...",
     pdf: "PDF",
-    toggleTheme: "Toggle theme",
-    addSkillCategory: "+ Add category",
     remove: "Remove",
     cancel: "Cancel",
     confirmClear: "Clear data",
+    gotIt: "Got it",
     confirmClearText:
       "Clearing data will remove all current content and cannot be recovered. Are you sure?",
+    importSuccessTitle: "Import successful!",
+    importSuccessText:
+      "Your curriculum has been imported successfully. You can now continue editing it without issue.",
+    exportSuccessTitle: "Download completed!",
+    exportSuccessText:
+      "Your curriculum has been downloaded successfully. Check your downloads folder to see the file.",
     loadExampleConfirmTitle: "Load example",
     loadExampleConfirmText:
       "Loading the example will erase current data and saved progress. Are you sure?",
@@ -573,6 +476,8 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     templateCreativeDescription: "A creative sidebar layout with modern style.",
     templateGradientLabel: "Gradient",
     templateGradientDescription: "A polished header and elegant section styling.",
+    templateClassicLabel: "Classic",
+    templateClassicDescription: "Traditional Vitae-style format, clean and ATS-friendly.",
   },
 };
 
@@ -671,13 +576,46 @@ async function compressImage(file: File, maxW = 400): Promise<string> {
 function parseImport(text: string): CVData | null {
   try {
     const parsed = JSON.parse(text);
-    return { ...EMPTY_DATA, ...parsed };
+    const migrated = {
+      ...EMPTY_DATA,
+      ...parsed,
+      datos_personales: {
+        ...EMPTY_DATA.datos_personales,
+        ...(parsed.datos_personales || {}),
+      },
+      redes_sociales: {
+        ...EMPTY_DATA.redes_sociales,
+        ...(parsed.redes_sociales || {}),
+        linkedin:
+          (parsed.redes_sociales && parsed.redes_sociales.linkedin) ||
+          (parsed.datos_personales && parsed.datos_personales.linkedin) ||
+          "",
+      },
+    };
+    return migrated;
   } catch {}
   const m = text.match(/<!--CV_JSON:(.+?)-->/);
   if (m) {
     try {
       const parsed = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-      return { ...EMPTY_DATA, ...parsed, config: { ...EMPTY_DATA.config, ...parsed.config } };
+      const migrated = {
+        ...EMPTY_DATA,
+        ...parsed,
+        config: { ...EMPTY_DATA.config, ...parsed.config },
+        datos_personales: {
+          ...EMPTY_DATA.datos_personales,
+          ...(parsed.datos_personales || {}),
+        },
+        redes_sociales: {
+          ...EMPTY_DATA.redes_sociales,
+          ...(parsed.redes_sociales || {}),
+          linkedin:
+            (parsed.redes_sociales && parsed.redes_sociales.linkedin) ||
+            (parsed.datos_personales && parsed.datos_personales.linkedin) ||
+            "",
+        },
+      };
+      return migrated;
     } catch {}
   }
   return null;
@@ -955,7 +893,7 @@ const IconTrash = (
 type MenuItem = {
   label: string;
   onClick?: () => void;
-  icon?: JSX.Element | string;
+  icon?: React.ReactNode;
   disabled?: boolean;
 };
 function Menu({
@@ -1080,9 +1018,16 @@ function LanguageMenu({
 
 export default function CVBuilder() {
   const [data, setData] = useState<CVData>(EMPTY_DATA);
-  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem(THEME_KEY) as "dark" | "light") || "light";
+    }
+    return "light";
+  });
   const [showWelcome, setShowWelcome] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [showExportSuccess, setShowExportSuccess] = useState(false);
   const [showLoadExampleModal, setShowLoadExampleModal] = useState(false);
   const [sampleMode, setSampleMode] = useState(false);
   const [overflowWarn, setOverflowWarn] = useState(false);
@@ -1095,6 +1040,7 @@ export default function CVBuilder() {
   const previewRef = useRef<HTMLDivElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const importAcceptRef = useRef<string>(".json,.md,.txt");
+  const isHarvard = data.config.plantilla === "harvard";
 
   // Helper: Verificar si los datos están vacíos (sin contenido real del usuario)
   const isDataEmpty = (cvData: CVData): boolean => {
@@ -1105,8 +1051,9 @@ export default function CVBuilder() {
       dp.correo ||
       dp.telefono ||
       dp.ubicacion ||
-      dp.linkedin ||
+      dp.fecha_nacimiento ||
       dp.foto_base64;
+    const hasSocial = cvData.redes_sociales.linkedin || cvData.redes_sociales.sitio_web || cvData.redes_sociales.github || cvData.redes_sociales.behance;
     const hasProfile = cvData.perfil;
     const hasExperience = cvData.experiencia.some(
       (e) => e.empresa || e.rol || e.descripcion || e.logros,
@@ -1125,12 +1072,6 @@ export default function CVBuilder() {
     );
   };
 
-  // Helper: Obtener datos de ejemplo según la plantilla
-  const getTemplateSampleData = (plantilla: CVTemplateId): CVData => {
-    const sample = TEMPLATE_SAMPLE_DATA[plantilla] || SAMPLE_DATA;
-    return { ...sample, config: { ...data.config, plantilla } };
-  };
-
   // Helper: Merge datos reales con datos de ejemplo (los datos reales tienen prioridad)
   const mergeWithSampleData = (realData: CVData, sampleData: CVData): CVData => {
     return {
@@ -1141,7 +1082,8 @@ export default function CVBuilder() {
         correo: realData.datos_personales.correo || sampleData.datos_personales.correo,
         telefono: realData.datos_personales.telefono || sampleData.datos_personales.telefono,
         ubicacion: realData.datos_personales.ubicacion || sampleData.datos_personales.ubicacion,
-        linkedin: realData.datos_personales.linkedin || sampleData.datos_personales.linkedin,
+        fecha_nacimiento:
+          realData.datos_personales.fecha_nacimiento || sampleData.datos_personales.fecha_nacimiento,
         foto_base64:
           realData.datos_personales.foto_base64 || sampleData.datos_personales.foto_base64,
       },
@@ -1157,6 +1099,14 @@ export default function CVBuilder() {
       certificaciones:
         realData.certificaciones.length > 0 ? realData.certificaciones : sampleData.certificaciones,
       habilidades: realData.habilidades.length > 0 ? realData.habilidades : sampleData.habilidades,
+      redes_sociales: {
+        linkedin:
+          realData.redes_sociales.linkedin ||
+          sampleData.redes_sociales.linkedin,
+        sitio_web: realData.redes_sociales.sitio_web || sampleData.redes_sociales.sitio_web,
+        github: realData.redes_sociales.github || sampleData.redes_sociales.github,
+        behance: realData.redes_sociales.behance || sampleData.redes_sociales.behance,
+      },
     };
   };
 
@@ -1168,17 +1118,29 @@ export default function CVBuilder() {
 
       if (raw) {
         const parsed = JSON.parse(raw);
-        loadedData = {
+        const migrated = {
           ...EMPTY_DATA,
           ...parsed,
           config: { ...EMPTY_DATA.config, ...parsed.config },
+          datos_personales: {
+            ...EMPTY_DATA.datos_personales,
+            ...(parsed.datos_personales || {}),
+          },
+          redes_sociales: {
+            ...EMPTY_DATA.redes_sociales,
+            ...(parsed.redes_sociales || {}),
+            linkedin:
+              (parsed.redes_sociales && parsed.redes_sociales.linkedin) ||
+              (parsed.datos_personales && parsed.datos_personales.linkedin) ||
+              "",
+          },
         };
+        loadedData = migrated;
 
         // Si los datos cargados están vacíos, activar modo ejemplo por defecto
         if (isDataEmpty(loadedData)) {
           shouldActivateSampleMode = true;
-          const sampleData = getTemplateSampleData(loadedData.config.plantilla);
-          loadedData = sampleData;
+          loadedData = { ...SAMPLE_DATA, config: { ...SAMPLE_DATA.config, plantilla: loadedData.config.plantilla } };
         }
       } else {
         // Primera vez que entra (sin datos guardados), activar ejemplo
@@ -1198,7 +1160,7 @@ export default function CVBuilder() {
     if (!localStorage.getItem(WELCOME_KEY)) setShowWelcome(true);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
@@ -1288,6 +1250,9 @@ export default function CVBuilder() {
     if (!f) return;
     const b64 = await compressImage(f);
     update("datos_personales", { ...data.datos_personales, foto_base64: b64 });
+    if (!data.config.mostrar_foto) {
+      update("config", { ...data.config, mostrar_foto: true });
+    }
   };
 
   const exportPDF = async () => {
@@ -1317,6 +1282,7 @@ export default function CVBuilder() {
           .save()
           .then(() => {
             resolve(true);
+            setShowExportSuccess(true);
           })
           .catch((err: any) => {
             reject(err);
@@ -1343,14 +1309,24 @@ export default function CVBuilder() {
   const exportJSON = () => {
     const name = (data.datos_personales.nombre || "cv-easy").replace(/\s+/g, "_");
     download(`${name}.json`, JSON.stringify(data, null, 2), "application/json");
+    setShowExportSuccess(true);
   };
   const exportMD = () => {
     const dp = data.datos_personales;
     const lines: string[] = [];
     lines.push(`# ${dp.nombre || "Tu Nombre"}`);
     if (dp.puesto) lines.push(`**${dp.puesto}**`);
-    const contact = [dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" · ");
-    if (contact) lines.push(contact);
+    const contactItems = [
+      dp.ubicacion && `${tr("locationLabel")}: ${dp.ubicacion}`,
+      dp.correo && `${tr("emailLabel")}: ${dp.correo}`,
+      dp.telefono && `${tr("phoneLabel")}: ${dp.telefono}`,
+      dp.fecha_nacimiento && `${tr("birthDateLabel")}: ${dp.fecha_nacimiento}`,
+      data.redes_sociales.linkedin && `${tr("linkedinLabel")}: ${data.redes_sociales.linkedin}`,
+      data.redes_sociales.sitio_web && `${tr("websiteLabel")}: ${data.redes_sociales.sitio_web}`,
+      data.redes_sociales.github && `${tr("githubLabel")}: ${data.redes_sociales.github}`,
+      data.redes_sociales.behance && `${tr("behanceLabel")}: ${data.redes_sociales.behance}`,
+    ].filter(Boolean) as string[];
+    contactItems.forEach((item) => lines.push(item));
     if (data.perfil) {
       lines.push("\n## Perfil profesional\n", data.perfil);
     }
@@ -1382,6 +1358,7 @@ export default function CVBuilder() {
     lines.push(`\n<!--CV_JSON:${b64}-->`);
     const name = (dp.nombre || "cv-help").replace(/\s+/g, "_");
     download(`${name}.md`, lines.join("\n"), "text/markdown");
+    setShowExportSuccess(true);
   };
   const exportDOCX = () => {
     const el = previewRef.current?.querySelector(".cv-pages") as HTMLElement | null;
@@ -1389,6 +1366,7 @@ export default function CVBuilder() {
     const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>CV</title><style>body{font-family:${data.config.fuente},serif;font-size:12px;color:#000;}h1{font-size:24px;margin:0 0 4px;}h2{font-size:14px;border-bottom:1px solid #000;padding-bottom:2px;margin:12px 0 6px;}ul{margin:4px 0;padding-left:20px;}p{margin:4px 0;}.cv-paper{padding:0;}header{text-align:center;}</style></head><body>${el.innerHTML}</body></html>`;
     const name = (data.datos_personales.nombre || "cv-help").replace(/\s+/g, "_");
     download(`${name}.doc`, html, "application/msword");
+    setShowExportSuccess(true);
   };
   const handleImport = (file: File) => {
     const r = new FileReader();
@@ -1398,6 +1376,7 @@ export default function CVBuilder() {
         setData(parsed);
         setRealData(parsed); // Los datos importados son datos reales
         setSampleMode(false); // Desactivar modo ejemplo al importar
+        setShowImportSuccess(true);
       } else {
         alert("No se pudo leer el archivo.");
       }
@@ -1430,15 +1409,12 @@ export default function CVBuilder() {
 
   const toggleSampleData = () => {
     if (!sampleMode) {
-      // Activar: Merge datos reales con ejemplo
-      const sampleData = getTemplateSampleData(data.config.plantilla);
-      const merged = mergeWithSampleData(realData, sampleData);
-      setData(merged);
+      const merged = mergeWithSampleData(realData, SAMPLE_DATA);
+      setData({ ...merged, config: { ...merged.config, plantilla: data.config.plantilla } });
       setSampleMode(true);
       return;
     }
 
-    // Desactivar: Volver solo a los datos reales del usuario
     setData({ ...realData, config: data.config });
     setSampleMode(false);
   };
@@ -1579,6 +1555,70 @@ export default function CVBuilder() {
                 {tr("close")}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showImportSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
+          <div className="modal-card rounded-3xl shadow-2xl max-w-sm w-full p-6 sm:p-8 text-center">
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowImportSuccess(false)}
+                className="modal-close-btn"
+                aria-label={tr("close")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight">{tr("importSuccessTitle")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{tr("importSuccessText")}</p>
+            <button
+              onClick={() => setShowImportSuccess(false)}
+              className="mt-6 w-full rounded-full modal-primary-btn px-4 py-2 text-sm font-semibold"
+            >
+              {tr("gotIt")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showExportSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
+          <div className="modal-card rounded-3xl shadow-2xl max-w-sm w-full p-6 sm:p-8 text-center">
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowExportSuccess(false)}
+                className="modal-close-btn"
+                aria-label={tr("close")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight">{tr("exportSuccessTitle")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{tr("exportSuccessText")}</p>
+            <button
+              onClick={() => setShowExportSuccess(false)}
+              className="mt-6 w-full rounded-full modal-primary-btn px-4 py-2 text-sm font-semibold"
+            >
+              {tr("gotIt")}
+            </button>
           </div>
         </div>
       )}
@@ -1747,14 +1787,9 @@ export default function CVBuilder() {
                     value={data.config.plantilla}
                     onChange={(e) => {
                       const plantilla = e.target.value as CVTemplateId;
-                      const config = { ...data.config, plantilla };
-                      if (sampleMode) {
-                        setData({ ...TEMPLATE_SAMPLE_DATA[plantilla], config });
-                      } else {
-                        update("config", config);
-                      }
+                      update("config", { ...data.config, plantilla });
                     }}
-                    className="w-full appearance-none rounded-2xl border border-border bg-[var(--input)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full appearance-none rounded-2xl border border-border bg-[var(--input)] px-4 py-3 pr-10 text-sm text-[var(--foreground)] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                   >
                     {TEMPLATE_OPTIONS.map((option) => (
                       <option key={option.id} value={option.id}>
@@ -1762,9 +1797,6 @@ export default function CVBuilder() {
                       </option>
                     ))}
                   </select>
-                  <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-muted-foreground">
-                    ▾
-                  </span>
                 </div>
                 <p className="mt-3 text-xs text-muted-foreground">
                   {tr(
@@ -1837,16 +1869,18 @@ export default function CVBuilder() {
                   </div>
                 </Field>
               )}
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={data.config.mostrar_foto}
-                  onChange={(e) =>
-                    update("config", { ...data.config, mostrar_foto: e.target.checked })
-                  }
-                />
-                {tr("showPhotoCVDark")}
-              </label>
+              {!isHarvard && (
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={data.config.mostrar_foto}
+                    onChange={(e) =>
+                      update("config", { ...data.config, mostrar_foto: e.target.checked })
+                    }
+                  />
+                  {tr("showPhotoCVDark")}
+                </label>
+              )}
             </div>
 
             <Section title={tr("sectionPersonal")}>
@@ -1868,51 +1902,57 @@ export default function CVBuilder() {
                   }
                 />
               </Field>
-              <Field label={tr("fieldPhoto")} help={tr("photoHelp")}>
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-dashed border-muted bg-secondary/80">
-                    {data.datos_personales.foto_base64 ? (
-                      <img
-                        src={data.datos_personales.foto_base64}
-                        alt="Foto de perfil"
-                        className="h-28 w-28 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                        {IconUpload}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="photo-upload"
-                      className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold cursor-pointer transition hover:opacity-95"
-                    >
-                      {IconUpload}
-                      {tr("uploadPhoto")}
-                    </label>
-                    <input
-                      id="photo-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => onPhoto(e.target.files?.[0])}
-                      className="sr-only"
-                    />
-                    {data.datos_personales.foto_base64 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          update("datos_personales", { ...data.datos_personales, foto_base64: "" })
-                        }
-                        className="text-sm text-primary underline"
+              {!isHarvard && data.config.plantilla !== "compact" && (
+                <Field label={tr("fieldPhoto")} help={tr("photoHelp")}>
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-dashed border-muted bg-secondary/80">
+                      {data.datos_personales.foto_base64 ? (
+                        <img
+                          src={data.datos_personales.foto_base64}
+                          alt="Foto de perfil"
+                          className="h-28 w-28 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                          {IconUpload}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="photo-upload"
+                        className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold cursor-pointer transition hover:opacity-95"
                       >
-                        {tr("removePhoto")}
-                      </button>
-                    )}
-                    <p className="text-xs text-muted-foreground">{tr("photoHelp")}</p>
+                        {IconUpload}
+                        {tr("uploadPhoto")}
+                      </label>
+                      <input
+                        id="photo-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => onPhoto(e.target.files?.[0])}
+                        className="sr-only"
+                      />
+                      {data.datos_personales.foto_base64 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            update("datos_personales", { ...data.datos_personales, foto_base64: "" });
+                            if (data.config.mostrar_foto) {
+                              update("config", { ...data.config, mostrar_foto: false });
+                            }
+                          }}
+                          className="text-sm text-primary underline"
+                        >
+                          {tr("removePhoto")}
+                        </button>
+                      )}
+                      <p className="text-xs text-muted-foreground">{tr("photoHelp")}</p>
+                      <p className="text-[11px] text-muted-foreground/80">{tr("photoSuggestions")}</p>
+                    </div>
                   </div>
-                </div>
-              </Field>
+                </Field>
+              )}
               <Field label={tr("email")} help={tr("emailHelp")}>
                 <input
                   className={inputCls}
@@ -1947,19 +1987,66 @@ export default function CVBuilder() {
                   }
                 />
               </Field>
-              <Field label={tr("linkedin")} help={tr("linkedinHelp")}>
+              <Field label={`🔗 ${tr("linkedin")}`} help={tr("linkedinHelp")}>
                 <input
                   className={inputCls}
-                  value={data.datos_personales.linkedin}
+                  value={data.redes_sociales.linkedin}
                   onChange={(e) =>
-                    update("datos_personales", {
-                      ...data.datos_personales,
-                      linkedin: e.target.value,
-                    })
+                    update("redes_sociales", { ...data.redes_sociales, linkedin: e.target.value })
                   }
                 />
               </Field>
+              {!isHarvard && (
+                <Field label={tr("birthDate")} help={tr("birthDateHelp")}>
+                  <div className="relative">
+                    <input
+                      className={inputCls + " pr-10"}
+                      type="date"
+                      value={data.datos_personales.fecha_nacimiento}
+                      onChange={(e) =>
+                        update("datos_personales", {
+                          ...data.datos_personales,
+                          fecha_nacimiento: e.target.value,
+                        })
+                      }
+                    />
+                    <span className="absolute inset-y-0 right-3 flex items-center text-muted-foreground pointer-events-none">📅</span>
+                  </div>
+                </Field>
+              )}
             </Section>
+
+            {!isHarvard && (
+              <Section title={tr("sectionSocial")}>
+                <Field label={`🌐 ${tr("website")}`} help={tr("websiteHelp")}>
+                  <input
+                    className={inputCls}
+                    value={data.redes_sociales.sitio_web}
+                    onChange={(e) =>
+                      update("redes_sociales", { ...data.redes_sociales, sitio_web: e.target.value })
+                    }
+                  />
+                </Field>
+                <Field label={`💻 ${tr("github")}`} help={tr("githubHelp")}>
+                  <input
+                    className={inputCls}
+                    value={data.redes_sociales.github}
+                    onChange={(e) =>
+                      update("redes_sociales", { ...data.redes_sociales, github: e.target.value })
+                    }
+                  />
+                </Field>
+                <Field label={`🎨 ${tr("behance")}`} help={tr("behanceHelp")}>
+                  <input
+                    className={inputCls}
+                    value={data.redes_sociales.behance}
+                    onChange={(e) =>
+                      update("redes_sociales", { ...data.redes_sociales, behance: e.target.value })
+                    }
+                  />
+                </Field>
+              </Section>
+            )}
 
             <Section title={tr("sectionProfile")}>
               <Field label={tr("fieldSummary")} help={tr("summaryHelp")}>
@@ -2316,6 +2403,8 @@ function CVPreview({ data, tr }: { data: CVData; tr: (key: TranslationKey) => st
       return <CreativeTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
     if (plantilla === "gradient")
       return <GradientTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
+    if (plantilla === "classic")
+      return <ClassicTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
     return <CompactTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
   }, [data, plantilla, mostrar_foto, tr]);
 
@@ -2361,34 +2450,22 @@ function HarvardTemplate({
   tr: (key: TranslationKey) => string;
 }) {
   const dp = data.datos_personales;
-  const contactParts = [
-    dp.ubicacion && `📍 ${dp.ubicacion}`,
-    dp.correo && `✉ ${dp.correo}`,
-    dp.telefono && `📞 ${dp.telefono}`,
-    dp.linkedin && `🔗 ${dp.linkedin}`,
-  ].filter(Boolean) as string[];
+  const contactLine = [
+    dp.correo,
+    dp.telefono,
+    dp.ubicacion,
+    data.redes_sociales.linkedin,
+    data.redes_sociales.sitio_web,
+  ]
+    .filter(Boolean)
+    .join("   ");
   return (
     <div className="text-[12px] leading-snug">
       <header className="text-center mb-4">
-        {mostrar_foto && dp.foto_base64 && (
-          <img
-            src={dp.foto_base64}
-            alt=""
-            className="w-24 h-24 rounded-full object-cover mx-auto mb-2"
-          />
-        )}
-        <h1 className="text-3xl font-bold tracking-tight">{dp.nombre || tr("defaultName")}</h1>
-        {dp.puesto && <p className="text-sm mt-1">{dp.puesto}</p>}
-        {contactParts.length > 0 && (
-          <p className="text-[11px] mt-2 text-gray-700">{contactParts.join("   ")}</p>
-        )}
+        <h1 className="text-3xl font-bold tracking-tight mb-1">{dp.nombre || tr("defaultName")}</h1>
+        {dp.puesto && <p className="text-sm mt-1 mb-1">{dp.puesto}</p>}
+        {contactLine && <p className="text-[11px] mt-3 text-gray-700 break-words">{contactLine}</p>}
       </header>
-
-      {data.perfil && (
-        <HarvardBlock title={tr("sectionProfile")}>
-          <p className="text-justify">{data.perfil}</p>
-        </HarvardBlock>
-      )}
 
       {data.educacion.some((e) => e.institucion || e.grado) && (
         <HarvardBlock title={tr("sectionEducation")}>
@@ -2483,23 +2560,49 @@ function ModernTemplate({
   tr: (key: TranslationKey) => string;
 }) {
   const dp = data.datos_personales;
+  const contactItems = [
+    dp.ubicacion && { label: tr("locationLabel"), value: dp.ubicacion },
+    dp.correo && { label: tr("emailLabel"), value: dp.correo },
+    dp.telefono && { label: tr("phoneLabel"), value: dp.telefono },
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
+  const socialItems = [
+    data.redes_sociales.linkedin && { label: tr("linkedinLabel"), value: data.redes_sociales.linkedin, icon: "🔗" },
+    data.redes_sociales.sitio_web && { label: tr("websiteLabel"), value: data.redes_sociales.sitio_web, icon: "🌐" },
+    data.redes_sociales.github && { label: tr("githubLabel"), value: data.redes_sociales.github, icon: "💻" },
+    data.redes_sociales.behance && { label: tr("behanceLabel"), value: data.redes_sociales.behance, icon: "🎨" },
+  ].filter(Boolean) as Array<{ label: string; value: string; icon: string }>;
   return (
     <div className="text-[12px]">
       <header className="flex gap-4 items-center mb-5 pb-4 border-b-4 border-black">
         {mostrar_foto && dp.foto_base64 && (
-          <img src={dp.foto_base64} alt="" className="w-20 h-20 rounded object-cover" />
+          <img src={dp.foto_base64} alt="" className="w-20 h-20 rounded-full object-cover" />
         )}
         <div>
           <h1 className="text-3xl font-black">{dp.nombre || tr("defaultName")}</h1>
           <p className="text-base">{dp.puesto}</p>
-          <p className="text-[11px] mt-1 text-gray-700">
-            {[dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" | ")}
-          </p>
+          {contactItems.length > 0 && (
+            <div className="text-[11px] mt-1 text-gray-700 flex flex-wrap gap-x-4 gap-y-1">
+              {contactItems.map((item) => (
+                <span key={item.label}>
+                  <span className="font-semibold">{item.label}:</span> {item.value}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </header>
       {data.perfil && (
         <ModernBlock title={tr("sectionProfile")}>
           <p className="text-justify">{data.perfil}</p>
+        </ModernBlock>
+      )}
+      {socialItems.length > 0 && (
+        <ModernBlock title={tr("sectionSocialLinks")}>
+          {socialItems.map((item) => (
+            <p key={item.label}>
+              {item.icon} <span className="font-semibold">{item.label}:</span> {item.value}
+            </p>
+          ))}
         </ModernBlock>
       )}
       {data.educacion.length > 0 && (
@@ -2566,13 +2669,24 @@ function CompactTemplate({
   tr: (key: TranslationKey) => string;
 }) {
   const dp = data.datos_personales;
+  const contactLine = [
+    dp.ubicacion,
+    dp.correo,
+    dp.telefono,
+    data.redes_sociales.linkedin,
+    data.redes_sociales.sitio_web,
+    data.redes_sociales.github,
+    data.redes_sociales.behance,
+  ]
+    .filter(Boolean)
+    .join("   ");
   return (
     <div className="text-[11px]">
       <header className="mb-3">
         <h1 className="text-xl font-bold">
           {dp.nombre || tr("defaultName")} — <span className="font-normal">{dp.puesto}</span>
         </h1>
-        <p>{[dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" · ")}</p>
+        {contactLine && <p className="mt-1">{contactLine}</p>}
       </header>
       {data.perfil && <p className="mb-2 text-justify">{data.perfil}</p>}
       <h2 className="font-bold uppercase border-b border-black mt-3 mb-1">
@@ -2639,7 +2753,7 @@ function CreativeTemplate({
   const accent = data.config.accentColor || DEFAULT_ACCENT_COLOR;
   return (
     <div className="text-[12px] text-slate-700">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(220px,240px)_minmax(0,1fr)]">
         <aside
           className="rounded-3xl border bg-slate-100 p-5 shadow-sm"
           style={{ borderColor: accent }}
@@ -2651,11 +2765,17 @@ function CreativeTemplate({
               className="w-28 h-28 rounded-full object-cover mx-auto mb-4"
             />
           )}
-          <h1 className="text-2xl font-bold text-center" style={{ color: accent }}>
+          <h1 className="text-2xl font-bold text-center mb-1" style={{ color: accent }}>
             {dp.nombre || tr("defaultName")}
           </h1>
           <p className="text-sm text-slate-600 text-center mb-4">{dp.puesto}</p>
           <div className="space-y-3 text-sm">
+            {dp.ubicacion && (
+              <div>
+                <strong>{tr("locationLabel")}</strong>
+                <p>{dp.ubicacion}</p>
+              </div>
+            )}
             {dp.correo && (
               <div>
                 <strong>{tr("emailLabel")}</strong>
@@ -2668,28 +2788,46 @@ function CreativeTemplate({
                 <p>{dp.telefono}</p>
               </div>
             )}
-            {dp.ubicacion && (
+            {dp.fecha_nacimiento && (
               <div>
-                <strong>{tr("locationLabel")}</strong>
-                <p>{dp.ubicacion}</p>
+                <strong>{tr("birthDateLabel")}</strong>
+                <p>{dp.fecha_nacimiento}</p>
               </div>
             )}
-            {dp.linkedin && (
+            {data.redes_sociales.linkedin && (
               <div>
                 <strong>{tr("linkedinLabel")}</strong>
-                <p>{dp.linkedin}</p>
+                <p>{data.redes_sociales.linkedin}</p>
+              </div>
+            )}
+            {data.redes_sociales.sitio_web && (
+              <div>
+                <strong>{tr("websiteLabel")}</strong>
+                <p>{data.redes_sociales.sitio_web}</p>
+              </div>
+            )}
+            {data.redes_sociales.github && (
+              <div>
+                <strong>{tr("githubLabel")}</strong>
+                <p>{data.redes_sociales.github}</p>
+              </div>
+            )}
+            {data.redes_sociales.behance && (
+              <div>
+                <strong>{tr("behanceLabel")}</strong>
+                <p>{data.redes_sociales.behance}</p>
               </div>
             )}
           </div>
         </aside>
 
-        <main className="space-y-4">
+        <main className="space-y-4 min-w-0">
           {data.perfil && (
             <section className="rounded-3xl border border-slate-200 bg-white p-5">
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                 {tr("sectionProfile")}
               </h2>
-              <p className="text-sm leading-6 text-slate-700">{data.perfil}</p>
+              <p className="text-sm leading-6 text-slate-700 text-justify">{data.perfil}</p>
             </section>
           )}
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -2733,12 +2871,12 @@ function CreativeTemplate({
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                 {tr("sectionExperience")}
               </h2>
-              <div className="space-y-4 text-sm text-slate-700">
+              <div className="mt-3 space-y-4 text-sm text-slate-700">
                 {data.experiencia.map((e, i) => (
-                  <div key={i}>
+                  <div key={i} className="rounded-3xl border border-slate-200 p-4 bg-slate-50">
                     <div className="flex justify-between gap-4">
                       <p className="font-semibold text-slate-900">{e.rol}</p>
-                      <span className="text-[11px] text-slate-500">{e.periodo}</span>
+                      <span className="text-[11px] text-slate-500 whitespace-nowrap">{e.periodo}</span>
                     </div>
                     <p className="text-slate-600">{e.empresa}</p>
                     {e.descripcion && <p className="mt-2 text-slate-600 italic">{e.descripcion}</p>}
@@ -2785,82 +2923,85 @@ function GradientTemplate({
   tr: (key: TranslationKey) => string;
 }) {
   const dp = data.datos_personales;
+  const contactLine = [
+    dp.correo,
+    dp.telefono,
+    dp.ubicacion,
+    data.redes_sociales.linkedin,
+    data.redes_sociales.sitio_web,
+  ]
+    .filter(Boolean)
+    .join("   ");
   return (
     <div className="text-[12px] text-slate-800">
       <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-lg">
         <header
-          className="px-6 py-8 text-white"
+          className="px-6 py-8 text-white relative rounded-t-[2rem] overflow-hidden"
           style={{
             background: `linear-gradient(90deg, ${data.config.accentColor || DEFAULT_ACCENT_COLOR} 0%, ${data.config.accentColor || DEFAULT_ACCENT_COLOR}cc 55%, ${data.config.accentColor || DEFAULT_ACCENT_COLOR}80 100%)`,
           }}
         >
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold">{dp.nombre || "Tu Nombre"}</h1>
-              <p className="mt-2 text-base">{dp.puesto}</p>
+              <h1 className="text-3xl font-bold">{dp.nombre || tr("defaultName")}</h1>
+              {dp.puesto && <p className="mt-2 text-base opacity-90">{dp.puesto}</p>}
+              {contactLine && <p className="mt-3 text-sm text-white/90 break-words">{contactLine}</p>}
             </div>
             {mostrar_foto && dp.foto_base64 && (
               <img
                 src={dp.foto_base64}
                 alt="Foto"
-                className="w-24 h-24 rounded-full object-cover border-4 border-white"
+                className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md"
               />
             )}
           </div>
-          <p className="mt-4 text-sm text-white/90">
-            {[dp.correo, dp.telefono, dp.ubicacion, dp.linkedin].filter(Boolean).join(" · ")}
-          </p>
         </header>
-        <div className="grid gap-5 p-6 md:grid-cols-[1fr_220px]">
-          <section className="space-y-5">
-            {data.perfil && (
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  {tr("sectionProfile")}
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-slate-700">{data.perfil}</p>
-              </div>
-            )}
-            {data.experiencia.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  {tr("sectionExperience")}
-                </h2>
-                <div className="mt-3 space-y-4 text-sm text-slate-700">
-                  {data.experiencia.map((e, i) => (
-                    <div key={i} className="rounded-3xl border border-slate-200 p-4 bg-slate-50">
-                      <div className="flex justify-between gap-4">
-                        <p className="font-semibold text-slate-900">{e.rol}</p>
-                        <span className="text-[11px] text-slate-500">{e.periodo}</span>
-                      </div>
-                      <p className="text-slate-600">{e.empresa}</p>
-                      {e.descripcion && (
-                        <p className="mt-2 text-slate-600 italic">{e.descripcion}</p>
-                      )}
-                      {bullets(e.logros).length > 0 && (
-                        <ul className="mt-2 list-disc pl-5 space-y-1 text-slate-600">
-                          {bullets(e.logros).map((b, j) => (
-                            <li key={j}>{b}</li>
-                          ))}
-                        </ul>
-                      )}
+        <div className="p-6 space-y-5">
+          {data.perfil && (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">
+                {tr("sectionProfile")}
+              </h2>
+              <p className="text-sm leading-6 text-slate-700 text-justify">{data.perfil}</p>
+            </section>
+          )}
+          {data.experiencia.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">
+                {tr("sectionExperience")}
+              </h2>
+              <div className="space-y-4 text-sm text-slate-700">
+                {data.experiencia.map((e, i) => (
+                  <div key={i}>
+                    <div className="flex justify-between gap-4">
+                      <p className="font-semibold text-slate-900">{e.rol}</p>
+                      <span className="text-[11px] text-slate-500 whitespace-nowrap">{e.periodo}</span>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-slate-600">{e.empresa}</p>
+                    {e.descripcion && <p className="mt-2 text-slate-600 italic">{e.descripcion}</p>}
+                    {bullets(e.logros).length > 0 && (
+                      <ul className="mt-2 list-disc pl-5 space-y-1 text-slate-600">
+                        {bullets(e.logros).map((b, j) => (
+                          <li key={j}>{b}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
-          </section>
-          <aside className="space-y-5">
+            </section>
+          )}
+          <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {data.educacion.some((e) => e.institucion || e.grado) && (
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500 mb-3">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">
                   {tr("sectionEducation")}
                 </h2>
-                <div className="space-y-3 text-sm text-slate-700">
+                <div className="space-y-2 text-sm text-slate-700">
                   {data.educacion.map((e, i) => (
                     <div key={i}>
-                      <p className="font-semibold">{e.grado}</p>
-                      <p>{e.institucion}</p>
+                      <p className="font-semibold text-slate-900">{e.institucion}</p>
+                      <p className="text-slate-600">{e.grado}</p>
                       <p className="text-[11px] text-slate-500">{e.periodo}</p>
                     </div>
                   ))}
@@ -2868,8 +3009,8 @@ function GradientTemplate({
               </div>
             )}
             {data.certificaciones.length > 0 && (
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500 mb-3">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">
                   {tr("sectionCertifications")}
                 </h2>
                 <div className="space-y-2 text-sm text-slate-700">
@@ -2884,22 +3025,146 @@ function GradientTemplate({
                 </div>
               </div>
             )}
-            {data.habilidades.length > 0 && (
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500 mb-3">
-                  {tr("sectionSkills")}
-                </h2>
-                <div className="space-y-2 text-sm text-slate-700">
-                  {data.habilidades.map((g, i) => (
-                    <div key={i}>
-                      <strong>{g.categoria}:</strong> {g.items}
-                    </div>
-                  ))}
-                </div>
+          </section>
+          {data.habilidades.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">
+                {tr("sectionSkills")}
+              </h2>
+              <div className="space-y-2 text-sm text-slate-700">
+                {data.habilidades.map((g, i) => (
+                  <div key={i}>
+                    <span className="font-semibold text-slate-900">{g.categoria}:</span> {g.items}
+                  </div>
+                ))}
               </div>
-            )}
-          </aside>
+            </section>
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ClassicTemplate({
+  data,
+  mostrar_foto,
+  tr,
+}: {
+  data: CVData;
+  mostrar_foto: boolean;
+  tr: (key: TranslationKey) => string;
+}) {
+  const dp = data.datos_personales;
+  const contactLine = [
+    dp.correo,
+    dp.telefono,
+    dp.ubicacion,
+    data.redes_sociales.linkedin,
+    data.redes_sociales.sitio_web,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  return (
+    <div className="text-[12px] text-slate-800">
+      <div className="border border-slate-200 bg-white p-6">
+        <header className="flex items-center justify-between gap-6 mb-4">
+          <div>
+            <h1 className="text-2xl font-bold">{dp.nombre || tr("defaultName")}</h1>
+            {dp.puesto && <p className="text-sm mt-1">{dp.puesto}</p>}
+            {contactLine && <p className="mt-2 text-xs text-slate-600">{contactLine}</p>}
+          </div>
+          {mostrar_foto && dp.foto_base64 && (
+            <img
+              src={dp.foto_base64}
+              alt="Foto"
+              className="w-24 h-24 rounded-full object-cover border border-slate-200"
+            />
+          )}
+        </header>
+        {data.perfil && (
+          <section className="mb-4">
+            <h2 className="text-sm font-bold uppercase border-b border-black mb-2">
+              {tr("sectionProfile")}
+            </h2>
+            <p className="text-xs leading-5 text-justify">{data.perfil}</p>
+          </section>
+        )}
+        {data.experiencia.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-sm font-bold uppercase border-b border-black mb-2">
+              {tr("sectionExperience")}
+            </h2>
+            <div className="space-y-3 text-xs text-slate-700">
+              {data.experiencia.map((e, i) => (
+                <div key={i}>
+                  <div className="flex justify-between">
+                    <p className="font-semibold">{e.rol}</p>
+                    <span className="text-[11px] text-slate-500">{e.periodo}</span>
+                  </div>
+                  <p className="text-slate-600">{e.empresa}</p>
+                  {e.descripcion && <p className="mt-1 text-slate-600 italic">{e.descripcion}</p>}
+                  {bullets(e.logros).length > 0 && (
+                    <ul className="mt-1 list-disc pl-4 space-y-1 text-slate-600">
+                      {bullets(e.logros).map((b, j) => (
+                        <li key={j}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {data.educacion.some((e) => e.institucion || e.grado) && (
+            <div className="mb-4">
+              <h2 className="text-sm font-bold uppercase border-b border-black mb-2">
+                {tr("sectionEducation")}
+              </h2>
+              <div className="space-y-2 text-xs text-slate-700">
+                {data.educacion.map((e, i) => (
+                  <div key={i}>
+                    <p className="font-semibold">{e.institucion}</p>
+                    <p className="text-slate-600">{e.grado}</p>
+                    <p className="text-[11px] text-slate-500">{e.periodo}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.certificaciones.length > 0 && (
+            <div className="mb-4">
+              <h2 className="text-sm font-bold uppercase border-b border-black mb-2">
+                {tr("sectionCertifications")}
+              </h2>
+              <div className="space-y-2 text-xs text-slate-700">
+                {data.certificaciones.map((c, i) => (
+                  <div key={i}>
+                    <p>{c.nombre}</p>
+                    <p className="text-[11px] text-slate-500">
+                      {c.institucion} · {c.fecha}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+        {data.habilidades.length > 0 && (
+          <section>
+            <h2 className="text-sm font-bold uppercase border-b border-black mb-2">
+              {tr("sectionSkills")}
+            </h2>
+            <div className="space-y-2 text-xs text-slate-700">
+              {data.habilidades.map((g, i) => (
+                <div key={i}>
+                  <span className="font-semibold">{g.categoria}:</span> {g.items}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
