@@ -2346,18 +2346,18 @@ export default function CVBuilder() {
                     </span>
                     <button
                       type="button"
+                      onClick={() => requestDelete("certificaciones", i)}
+                      className="text-xs text-primary shrink-0"
+                    >
+                      {tr("remove")}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setCollapsedCertifications((prev) => ({ ...prev, [i]: !prev[i] }))}
                       className="text-xs text-muted-foreground hover:text-foreground shrink-0"
                       aria-expanded={!collapsed}
                     >
                       {collapsed ? tr("expand") : tr("minimize")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => requestDelete("certificaciones", i)}
-                      className="text-xs text-primary shrink-0"
-                    >
-                      {tr("remove")}
                     </button>
                   </div>
                   {!collapsed && <div className="p-3">
