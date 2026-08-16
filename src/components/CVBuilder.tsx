@@ -247,7 +247,7 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     sectionEducation: "Educación",
     sectionCertifications: "Certificaciones",
     sectionExperience: "Experiencia",
-    sectionSkills: "Habilidades (por categorías)",
+    sectionSkills: "Habilidades",
     fieldName: "Nombre completo",
     fieldJob: "Puesto / Profesión",
     fieldPhoto: "Foto (opcional)",
