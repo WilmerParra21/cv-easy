@@ -2377,7 +2377,7 @@ export default function CVBuilder() {
         <p className="mt-1">
           {tr("footerMadeBy")} {""}
           <a
-            href="https://github.com/WilmerParra21"
+            href="https://github.com/wilmerparragomez"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary font-medium hover:underline"
