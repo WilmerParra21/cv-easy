@@ -471,6 +471,19 @@ header select {
   display: inline-block;
 }
 
+/* Keep semantic CV entries together when html2pdf creates page breaks. */
+.cv-avoid-break {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cv-paper h2 {
+  break-after: avoid;
+  page-break-after: avoid;
+  line-height: 1.35;
+  padding-bottom: 4px;
+}
+
 .cv-pages {
   display: grid;
   gap: 1rem;

@@ -3,7 +3,7 @@ import { useIsMobile } from "../hooks/use-mobile";
 import { saveCVToGoogleDrive } from "../services/googleDrive";
 
 type SkillGroup = { categoria: string; items: string };
-type CVTemplateId = "harvard" | "modern" | "compact" | "creative" | "gradient" | "classic";
+type CVTemplateId = "harvard" | "modern" | "compact" | "gradient" | "classic";
 type CVData = {
   config: { plantilla: CVTemplateId; fuente: string; mostrar_foto: boolean; accentColor: string };
   datos_personales: {
@@ -38,6 +38,8 @@ const STORAGE_KEY = "cv-help:data:v3";
 const THEME_KEY = "cv-help:theme";
 const LANGUAGE_KEY = "cv-help:language";
 const WELCOME_KEY = "cv-help:welcome-dismissed:v2";
+const PDF_PAGE_MARGIN_MM = 12.7;
+const PDF_CONTENT_WIDTH_MM = 190.5;
 const DEFAULT_ACCENT_COLOR = "#1d4ed8";
 
 const SAMPLE_DATA: CVData = {
@@ -162,11 +164,6 @@ const TEMPLATE_OPTIONS: Array<{
   { id: "harvard", labelKey: "templateHarvardLabel", descriptionKey: "templateHarvardDescription" },
   { id: "modern", labelKey: "templateModernLabel", descriptionKey: "templateModernDescription" },
   { id: "compact", labelKey: "templateCompactLabel", descriptionKey: "templateCompactDescription" },
-  {
-    id: "creative",
-    labelKey: "templateCreativeLabel",
-    descriptionKey: "templateCreativeDescription",
-  },
   {
     id: "gradient",
     labelKey: "templateGradientLabel",
@@ -335,8 +332,6 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     templateModernDescription: "Diseño con secciones claras y buena jerarquía.",
     templateCompactLabel: "Compacta",
     templateCompactDescription: "Formato compacto para una sola página.",
-    templateCreativeLabel: "Creative",
-    templateCreativeDescription: "Panel lateral creativo con estilo moderno.",
     templateGradientLabel: "Gradient",
     templateGradientDescription: "Cabecera degradada y secciones sofisticadas.",
     templateClassicLabel: "Clásico",
@@ -482,8 +477,6 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     templateModernDescription: "A design with clear sections and strong hierarchy.",
     templateCompactLabel: "Compact",
     templateCompactDescription: "A compact format for a one-page resume.",
-    templateCreativeLabel: "Creative",
-    templateCreativeDescription: "A creative sidebar layout with modern style.",
     templateGradientLabel: "Gradient",
     templateGradientDescription: "A polished header and elegant section styling.",
     templateClassicLabel: "Classic",
@@ -1250,21 +1243,24 @@ export default function CVBuilder() {
       const el = previewRef.current?.querySelector(".cv-pages") as HTMLElement | null;
       let pdfBlob: Blob | undefined;
       if (el) {
+        const restorePDFElement = preparePDFElement(el);
         try {
           const mod = await import("html2pdf.js");
           const html2pdf = (mod as any).default ?? mod;
           pdfBlob = (await html2pdf()
             .set({
-              margin: 0,
+              margin: PDF_PAGE_MARGIN_MM,
               image: { type: "jpeg", quality: 0.95 },
-              html2canvas: { scale: 2, useCORS: true },
-              jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-              pagebreak: { mode: ["css"] },
+              html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+              jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+              pagebreak: { mode: ["css", "legacy"], avoid: [".cv-avoid-break"] },
             })
             .from(el)
             .output("blob")) as Blob;
         } catch (pdfErr) {
           console.warn("No se pudo generar el PDF para Drive:", pdfErr);
+        } finally {
+          restorePDFElement();
         }
       }
       const pdfName = `CV - ${data.datos_personales.nombre || "CV"} - generado por CVrap.pdf`;
@@ -1311,27 +1307,30 @@ export default function CVBuilder() {
 
       const mod = await import("html2pdf.js");
       const html2pdf = (mod as any).default ?? mod;
+      const restorePDFElement = preparePDFElement(el);
 
-      await new Promise((resolve, reject) => {
-        html2pdf()
-          .set({
-            margin: 0,
-            filename: `${data.datos_personales.nombre || "cv-help"}.pdf`,
-            image: { type: "jpeg", quality: 0.95 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            pagebreak: { mode: ["css", "legacy"] },
-          })
-          .from(el)
-          .save()
-          .then(() => {
-            resolve(true);
-            setShowExportSuccess(true);
-          })
-          .catch((err: any) => {
-            reject(err);
-          });
-      });
+      try {
+        await new Promise((resolve, reject) => {
+          html2pdf()
+            .set({
+              margin: PDF_PAGE_MARGIN_MM,
+              filename: `${data.datos_personales.nombre || "cv-help"}.pdf`,
+              image: { type: "jpeg", quality: 0.95 },
+              html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+              jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+              pagebreak: { mode: ["css", "legacy"], avoid: [".cv-avoid-break"] },
+            })
+            .from(el)
+            .save()
+            .then(() => {
+              resolve(true);
+              setShowExportSuccess(true);
+            })
+            .catch((err: any) => reject(err));
+        });
+      } finally {
+        restorePDFElement();
+      }
     } catch (err) {
       console.error("Error al exportar PDF:", err);
       alert("Error al exportar PDF. Revisa la consola para más detalles.");
@@ -1947,7 +1946,7 @@ export default function CVBuilder() {
                   ))}
                 </select>
               </Field>
-              {["creative", "gradient"].includes(data.config.plantilla) && (
+              {data.config.plantilla === "gradient" && (
                 <Field label={tr("accentColor")} help={tr("colorAccentHelp")}>
                   <div className="flex flex-wrap items-center gap-3">
                     <input
@@ -2768,8 +2767,6 @@ function CVPreview({ data, tr }: { data: CVData; tr: (key: TranslationKey) => st
       return <HarvardTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
     if (plantilla === "modern")
       return <ModernTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
-    if (plantilla === "creative")
-      return <CreativeTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
     if (plantilla === "gradient")
       return <GradientTemplate data={data} mostrar_foto={mostrar_foto} tr={tr} />;
     if (plantilla === "classic")
@@ -2782,6 +2779,38 @@ function CVPreview({ data, tr }: { data: CVData; tr: (key: TranslationKey) => st
       <div className="cv-paper">{content}</div>
     </div>
   );
+}
+
+function preparePDFElement(source: HTMLElement): () => void {
+  const paper = source.querySelector(".cv-paper") as HTMLElement | null;
+  const sourceStyle = source.getAttribute("style");
+  const paperStyle = paper?.getAttribute("style");
+
+  source.style.width = `${PDF_CONTENT_WIDTH_MM}mm`;
+  source.style.display = "block";
+  source.style.padding = "0";
+  source.style.gap = "0";
+
+  if (paper) {
+    paper.style.width = `${PDF_CONTENT_WIDTH_MM}mm`;
+    paper.style.minHeight = "0";
+    paper.style.height = "auto";
+    paper.style.padding = "0";
+    paper.style.margin = "0";
+    paper.style.boxShadow = "none";
+    paper.style.overflow = "visible";
+    paper.style.display = "block";
+    paper.style.transform = "none";
+  }
+
+  return () => {
+    if (sourceStyle === null) source.removeAttribute("style");
+    else source.setAttribute("style", sourceStyle);
+    if (paper) {
+      if (paperStyle === null) paper.removeAttribute("style");
+      else paper.setAttribute("style", paperStyle);
+    }
+  };
 }
 
 function CVActions({ data, tr }: { data: CVData; tr: (key: TranslationKey) => string }) {
@@ -2845,7 +2874,7 @@ function HarvardTemplate({
       {data.educacion.some((e) => e.institucion || e.grado) && (
         <HarvardBlock title={tr("sectionEducation")}>
           {data.educacion.map((e, i) => (
-            <div key={i} className="mb-1.5">
+            <div key={i} className="cv-avoid-break mb-1.5">
               <div className="flex justify-between items-baseline">
                 <span>
                   <strong>{e.institucion}</strong>
@@ -2861,7 +2890,7 @@ function HarvardTemplate({
       {data.certificaciones.length > 0 && (
         <HarvardBlock title={tr("sectionCertifications")}>
           {data.certificaciones.map((c, i) => (
-            <div key={i} className="mb-0.5">
+            <div key={i} className="cv-avoid-break mb-0.5">
               {c.nombre}
               {c.institucion && ` (${c.institucion})`}
               {c.fecha && ` - ${c.fecha}`}
@@ -2873,7 +2902,7 @@ function HarvardTemplate({
       {data.experiencia.some((e) => e.empresa || e.rol) && (
         <HarvardBlock title={tr("sectionExperience")}>
           {data.experiencia.map((e, i) => (
-            <div key={i} className="mb-2.5">
+            <div key={i} className="cv-avoid-break mb-2.5">
               <div className="flex justify-between items-baseline">
                 <strong>
                   {e.rol}
@@ -2897,7 +2926,7 @@ function HarvardTemplate({
       {data.habilidades.length > 0 && (
         <HarvardBlock title={tr("sectionSkills")}>
           {data.habilidades.map((g, i) => (
-            <div key={i} className="mb-1">
+            <div key={i} className="cv-avoid-break mb-1">
               <strong>{g.categoria}:</strong> {g.items}
             </div>
           ))}
@@ -2984,7 +3013,7 @@ function ModernTemplate({
       {data.educacion.length > 0 && (
         <ModernBlock title={tr("sectionEducation")}>
           {data.educacion.map((e, i) => (
-            <div key={i} className="mb-1">
+            <div key={i} className="cv-avoid-break mb-1">
               <strong>{e.grado}</strong> — {e.institucion}{" "}
               <span className="text-[11px]">({e.periodo})</span>
             </div>
@@ -2994,7 +3023,7 @@ function ModernTemplate({
       {data.certificaciones.length > 0 && (
         <ModernBlock title={tr("sectionCertifications")}>
           {data.certificaciones.map((c, i) => (
-            <div key={i}>
+            <div key={i} className="cv-avoid-break">
               {c.nombre} — {c.institucion} ({c.fecha})
             </div>
           ))}
@@ -3003,7 +3032,7 @@ function ModernTemplate({
       {data.experiencia.length > 0 && (
         <ModernBlock title={tr("sectionExperience")}>
           {data.experiencia.map((e, i) => (
-            <div key={i} className="mb-3">
+            <div key={i} className="cv-avoid-break mb-3">
               <div className="flex justify-between">
                 <strong>
                   {e.rol} · {e.empresa}
@@ -3089,7 +3118,7 @@ function CompactTemplate({
         {tr("sectionExperience")}
       </h2>
       {data.experiencia.map((e, i) => (
-        <div key={i} className="mb-1">
+        <div key={i} className="cv-avoid-break mb-1">
           <strong>{e.rol}</strong>, {e.empresa} <em>({e.periodo})</em>
           {bullets(e.logros).length > 0 && (
             <ul className="list-disc pl-4">
@@ -3128,11 +3157,11 @@ function CreativeTemplate({
   const dp = data.datos_personales;
   const accent = data.config.accentColor || DEFAULT_ACCENT_COLOR;
   return (
-    <div className="text-[12px] text-slate-700">
+    <div className="text-[12px] text-slate-700 bg-white" style={{ backgroundColor: "#ffffff", color: "#334155" }}>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(220px,240px)_minmax(0,1fr)]">
         <aside
-          className="rounded-3xl border bg-slate-100 p-5 shadow-sm"
-          style={{ borderColor: accent }}
+          className="bg-slate-50 p-5"
+          style={{ backgroundColor: "#f8fafc" }}
         >
           {mostrar_foto && dp.foto_base64 && (
             <img
@@ -3197,9 +3226,12 @@ function CreativeTemplate({
           </div>
         </aside>
 
-        <main className="space-y-4 min-w-0">
+        <main
+          className="space-y-4 min-w-0 bg-white"
+          style={{ backgroundColor: "#ffffff", color: "#334155" }}
+        >
           {data.perfil && (
-            <section className="rounded-3xl border border-slate-200 bg-white p-5">
+            <section className="bg-white pb-5" style={{ backgroundColor: "#ffffff" }}>
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                 {tr("sectionProfile")}
               </h2>
@@ -3208,7 +3240,7 @@ function CreativeTemplate({
           )}
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {data.educacion.some((e) => e.institucion || e.grado) && (
-              <div className="rounded-3xl border border-slate-200 bg-white p-5">
+              <div className="bg-white" style={{ backgroundColor: "#ffffff" }}>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                   {tr("sectionEducation")}
                 </h2>
@@ -3224,7 +3256,7 @@ function CreativeTemplate({
               </div>
             )}
             {data.certificaciones.length > 0 && (
-              <div className="rounded-3xl border border-slate-200 bg-white p-5">
+              <div className="bg-white" style={{ backgroundColor: "#ffffff" }}>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                   {tr("sectionCertifications")}
                 </h2>
@@ -3243,13 +3275,13 @@ function CreativeTemplate({
           </section>
 
           {data.experiencia.length > 0 && (
-            <section className="rounded-3xl border border-slate-200 bg-white p-5">
+            <section className="bg-white pb-4" style={{ backgroundColor: "#ffffff" }}>
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                 {tr("sectionExperience")}
               </h2>
               <div className="mt-3 space-y-4 text-sm text-slate-700">
                 {data.experiencia.map((e, i) => (
-                  <div key={i} className="rounded-3xl border border-slate-200 p-4 bg-slate-50">
+                  <div key={i} className="cv-avoid-break bg-slate-50 p-3" style={{ backgroundColor: "#f8fafc" }}>
                     <div className="flex justify-between gap-4">
                       <p className="font-semibold text-slate-900">{e.rol}</p>
                       <span className="text-[11px] text-slate-500 whitespace-nowrap">{e.periodo}</span>
@@ -3270,7 +3302,7 @@ function CreativeTemplate({
           )}
 
           {data.habilidades.length > 0 && (
-            <section className="rounded-3xl border border-slate-200 bg-white p-5">
+            <section className="bg-white" style={{ backgroundColor: "#ffffff" }}>
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
                 {tr("sectionSkills")}
               </h2>
@@ -3348,7 +3380,7 @@ function GradientTemplate({
               </h2>
               <div className="space-y-4 text-sm text-slate-700">
                 {data.experiencia.map((e, i) => (
-                  <div key={i}>
+                  <div key={i} className="cv-avoid-break">
                     <div className="flex justify-between gap-4">
                       <p className="font-semibold text-slate-900">{e.rol}</p>
                       <span className="text-[11px] text-slate-500 whitespace-nowrap">{e.periodo}</span>
@@ -3473,7 +3505,7 @@ function ClassicTemplate({
             </h2>
             <div className="space-y-3 text-xs text-slate-700">
               {data.experiencia.map((e, i) => (
-                <div key={i}>
+                <div key={i} className="cv-avoid-break">
                   <div className="flex justify-between">
                     <p className="font-semibold">{e.rol}</p>
                     <span className="text-[11px] text-slate-500">{e.periodo}</span>
