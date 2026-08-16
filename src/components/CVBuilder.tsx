@@ -53,7 +53,7 @@ const SAMPLE_DATA: CVData = {
     correo: "ana.rodriguez@ejemplo.com",
     telefono: "+34 612 345 678",
     ubicacion: "Madrid, España",
-    fecha_nacimiento: "15 de mayo de 1990",
+    fecha_nacimiento: "1990-05-15",
     foto_base64: "",
   },
   perfil:
@@ -306,6 +306,11 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     pdf: "PDF",
     toggleTheme: "Cambiar tema",
     remove: "Eliminar",
+    minimize: "Minimizar",
+    expand: "Expandir",
+    dragging: "Arrastrando…",
+    confirmDelete: "Confirmar eliminación",
+    confirmDeleteText: "¿De verdad deseas eliminar este elemento? Esta acción no se puede deshacer.",
     cancel: "Cancelar",
     confirmClear: "Vaciar datos",
     gotIt: "Entendido",
@@ -448,6 +453,11 @@ const TRANSLATIONS: Record<Language, Record<string, string | string[]>> = {
     exporting: "Exporting...",
     pdf: "PDF",
     remove: "Remove",
+    minimize: "Minimize",
+    expand: "Expand",
+    dragging: "Dragging…",
+    confirmDelete: "Confirm deletion",
+    confirmDeleteText: "Do you really want to delete this item? This action cannot be undone.",
     cancel: "Cancel",
     confirmClear: "Clear data",
     gotIt: "Got it",
@@ -687,6 +697,23 @@ const IconSpinner = (
   </svg>
 );
 
+const IconGrip = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 12 18"
+    fill="currentColor"
+    className="h-4 w-4 text-muted-foreground"
+    aria-hidden="true"
+  >
+    <circle cx="3" cy="3" r="1.5" />
+    <circle cx="9" cy="3" r="1.5" />
+    <circle cx="3" cy="9" r="1.5" />
+    <circle cx="9" cy="9" r="1.5" />
+    <circle cx="3" cy="15" r="1.5" />
+    <circle cx="9" cy="15" r="1.5" />
+  </svg>
+);
+
 const IconSun = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -863,13 +890,21 @@ const IconUpload = (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="h-6 w-6"
+    className="h-4 w-4"
   >
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <polyline points="17 8 12 3 7 8" />
     <line x1="12" y1="3" x2="12" y2="15" />
   </svg>
 );
+
+const formatBirthDate = (value: string): string => {
+  if (!value) return value;
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return value;
+  const [, year, month, day] = match;
+  return `${day}/${month}/${year}`;
+};
 
 const IconTrash = (
   <svg
@@ -1041,6 +1076,15 @@ export default function CVBuilder() {
   const importInputRef = useRef<HTMLInputElement>(null);
   const importAcceptRef = useRef<string>(".json,.md,.txt");
   const isHarvard = data.config.plantilla === "harvard";
+  const [collapsedExp, setCollapsedExp] = useState<Record<number, boolean>>({});
+  const [collapsedSkills, setCollapsedSkills] = useState<Record<number, boolean>>({});
+  const [collapsedEducation, setCollapsedEducation] = useState<Record<number, boolean>>({});
+  const [collapsedCertifications, setCollapsedCertifications] = useState<Record<number, boolean>>({});
+  const [draggingItem, setDraggingItem] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    section: "educacion" | "certificaciones" | "experiencia" | "habilidades";
+    index: number;
+  } | null>(null);
 
   // Helper: Verificar si los datos están vacíos (sin contenido real del usuario)
   const isDataEmpty = (cvData: CVData): boolean => {
@@ -1320,7 +1364,7 @@ export default function CVBuilder() {
       dp.ubicacion && `${tr("locationLabel")}: ${dp.ubicacion}`,
       dp.correo && `${tr("emailLabel")}: ${dp.correo}`,
       dp.telefono && `${tr("phoneLabel")}: ${dp.telefono}`,
-      dp.fecha_nacimiento && `${tr("birthDateLabel")}: ${dp.fecha_nacimiento}`,
+      dp.fecha_nacimiento && `${tr("birthDateLabel")}: ${formatBirthDate(dp.fecha_nacimiento)}`,
       data.redes_sociales.linkedin && `${tr("linkedinLabel")}: ${data.redes_sociales.linkedin}`,
       data.redes_sociales.sitio_web && `${tr("websiteLabel")}: ${data.redes_sociales.sitio_web}`,
       data.redes_sociales.github && `${tr("githubLabel")}: ${data.redes_sociales.github}`,
@@ -1437,6 +1481,25 @@ export default function CVBuilder() {
     setShowLoadExampleModal(false);
   };
 
+  const requestDelete = (
+    section: "educacion" | "certificaciones" | "experiencia" | "habilidades",
+    index: number,
+  ) => setDeleteTarget({ section, index });
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    const { section, index } = deleteTarget;
+    if (section === "educacion") update(section, data.educacion.filter((_, i) => i !== index));
+    if (section === "certificaciones") {
+      update(section, data.certificaciones.filter((_, i) => i !== index));
+    }
+    if (section === "experiencia") update(section, data.experiencia.filter((_, i) => i !== index));
+    if (section === "habilidades") update(section, data.habilidades.filter((_, i) => i !== index));
+    setDeleteTarget(null);
+  };
+
+  const cancelDelete = () => setDeleteTarget(null);
+
   const downloadItems: MenuItem[] = [
     {
       label: isExportingPDF ? tr("exporting") : tr("pdf"),
@@ -1455,6 +1518,11 @@ export default function CVBuilder() {
 
   return (
     <div className="min-h-screen flex flex-col relative">
+      {draggingItem && (
+        <div className="pointer-events-none fixed left-1/2 top-4 z-[60] -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xl ring-4 ring-primary/20">
+          {IconGrip} <span className="ml-1">{tr("dragging")}</span>
+        </div>
+      )}
       {showClearModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
           <div className="modal-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
@@ -1479,6 +1547,38 @@ export default function CVBuilder() {
                 className="w-full sm:w-auto rounded-full modal-primary-btn px-4 py-2 text-sm font-semibold"
               >
                 {tr("confirmClear")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 modal-backdrop">
+          <div className="modal-card rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-none w-12 h-12 rounded-3xl bg-primary/10 text-primary flex items-center justify-center">
+                {IconWarning}
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold tracking-tight">{tr("confirmDelete")}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{tr("confirmDeleteText")}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={cancelDelete}
+                className="w-full sm:w-auto rounded-full modal-cancel-btn px-4 py-2 text-sm transition"
+              >
+                {tr("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="w-full sm:w-auto rounded-full modal-primary-btn px-4 py-2 text-sm font-semibold"
+              >
+                {tr("remove")}
               </button>
             </div>
           </div>
@@ -2060,58 +2160,128 @@ export default function CVBuilder() {
             </Section>
 
             <Section title={tr("sectionEducation")}>
-              {data.educacion.map((ed, i) => (
-                <div key={i} className="border border-border rounded-md p-3 mb-2">
-                  <Field
-                    label={tr("fieldEducationInstitution")}
-                    help={tr("educationInstitutionHelp")}
+              {data.educacion.map((ed, i) => {
+                const collapsed = !!collapsedEducation[i];
+                return (
+                  <div
+                    key={i}
+                    className={`relative border border-border rounded-md mb-2 overflow-hidden transition-all duration-200 ${draggingItem === `education-${i}` ? "opacity-60 scale-[0.98] shadow-xl ring-2 ring-primary" : ""}`}
+                    data-drag-item="education"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.add("ring-2", "ring-primary");
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove("ring-2", "ring-primary");
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from = Number(e.dataTransfer.getData("text/plain"));
+                      if (from === i || Number.isNaN(from)) return;
+                      const arr = [...data.educacion];
+                      const [moved] = arr.splice(from, 1);
+                      arr.splice(i, 0, moved);
+                      update("educacion", arr);
+                      e.currentTarget.classList.remove("ring-2", "ring-primary");
+                    }}
                   >
-                    <input
-                      className={inputCls}
-                      value={ed.institucion}
-                      onChange={(e) => {
-                        const a = [...data.educacion];
-                        a[i] = { ...ed, institucion: e.target.value };
-                        update("educacion", a);
-                      }}
-                    />
-                  </Field>
-                  <Field label={tr("fieldEducationDegree")} help={tr("educationDegreeHelp")}>
-                    <input
-                      className={inputCls}
-                      value={ed.grado}
-                      onChange={(e) => {
-                        const a = [...data.educacion];
-                        a[i] = { ...ed, grado: e.target.value };
-                        update("educacion", a);
-                      }}
-                    />
-                  </Field>
-                  <Field label={tr("fieldEducationPeriod")} help={tr("educationPeriodHelp")}>
-                    <input
-                      className={inputCls}
-                      value={ed.periodo}
-                      onChange={(e) => {
-                        const a = [...data.educacion];
-                        a[i] = { ...ed, periodo: e.target.value };
-                        update("educacion", a);
-                      }}
-                    />
-                  </Field>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      update(
-                        "educacion",
-                        data.educacion.filter((_, j) => j !== i),
-                      )
-                    }
-                    className="text-xs text-primary"
-                  >
-                    {tr("remove")}
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-2 p-3 bg-muted/40">
+                      <span
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", String(i));
+                          e.dataTransfer.effectAllowed = "move";
+                          const preview = e.currentTarget.closest("[data-drag-item]");
+                          if (preview instanceof HTMLElement) e.dataTransfer.setDragImage(preview, 28, 28);
+                          setDraggingItem(`education-${i}`);
+                          e.currentTarget.classList.add("cursor-grabbing", "opacity-60");
+                        }}
+                        onDragEnd={(e) => {
+                          setDraggingItem(null);
+                          e.currentTarget.classList.remove("cursor-grabbing", "opacity-60");
+                        }}
+                        className="cursor-grab flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background hover:bg-muted"
+                        title="Arrastra para mover este elemento"
+                        aria-label="Arrastra para mover este elemento"
+                      >
+                        {IconGrip}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedEducation((prev) => ({ ...prev, [i]: !prev[i] }))
+                        }
+                        className="flex items-center gap-2 text-xs font-medium text-left flex-1 min-w-0"
+                        aria-expanded={!collapsed}
+                      >
+                        <span className="text-muted-foreground">{collapsed ? "▸" : "▾"}</span>
+                        <span className="truncate">
+                          {ed.grado || ed.institucion
+                            ? `${ed.grado || ""}${ed.institucion ? ` — ${ed.institucion}` : ""}`
+                            : `Estudio #${i + 1}`}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => requestDelete("educacion", i)}
+                        className="text-xs text-primary shrink-0"
+                      >
+                        {tr("remove")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedEducation((prev) => ({ ...prev, [i]: !prev[i] }))
+                        }
+                        className="text-xs text-muted-foreground hover:text-foreground shrink-0"
+                        aria-expanded={!collapsed}
+                      >
+                        {collapsed ? tr("expand") : tr("minimize")}
+                      </button>
+                    </div>
+                    {!collapsed && (
+                      <div className="p-3">
+                        <Field
+                          label={tr("fieldEducationInstitution")}
+                          help={tr("educationInstitutionHelp")}
+                        >
+                          <input
+                            className={inputCls}
+                            value={ed.institucion}
+                            onChange={(e) => {
+                              const a = [...data.educacion];
+                              a[i] = { ...ed, institucion: e.target.value };
+                              update("educacion", a);
+                            }}
+                          />
+                        </Field>
+                        <Field label={tr("fieldEducationDegree")} help={tr("educationDegreeHelp")}>
+                          <input
+                            className={inputCls}
+                            value={ed.grado}
+                            onChange={(e) => {
+                              const a = [...data.educacion];
+                              a[i] = { ...ed, grado: e.target.value };
+                              update("educacion", a);
+                            }}
+                          />
+                        </Field>
+                        <Field label={tr("fieldEducationPeriod")} help={tr("educationPeriodHelp")}>
+                          <input
+                            className={inputCls}
+                            value={ed.periodo}
+                            onChange={(e) => {
+                              const a = [...data.educacion];
+                              a[i] = { ...ed, periodo: e.target.value };
+                              update("educacion", a);
+                            }}
+                          />
+                        </Field>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <button
                 type="button"
                 onClick={() =>
@@ -2127,8 +2297,70 @@ export default function CVBuilder() {
             </Section>
 
             <Section title={tr("sectionCertifications")}>
-              {data.certificaciones.map((c, i) => (
-                <div key={i} className="border border-border rounded-md p-3 mb-2">
+              {data.certificaciones.map((c, i) => {
+                const collapsed = !!collapsedCertifications[i];
+                return (
+                <div
+                  key={i}
+                  className={`relative border border-border rounded-md mb-2 overflow-hidden transition-all duration-200 ${draggingItem === `certification-${i}` ? "opacity-60 scale-[0.98] shadow-xl ring-2 ring-primary" : ""}`}
+                  data-drag-item="certification"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add("ring-2", "ring-primary");
+                  }}
+                  onDragLeave={(e) => e.currentTarget.classList.remove("ring-2", "ring-primary")}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const from = Number(e.dataTransfer.getData("text/plain"));
+                    if (from === i || Number.isNaN(from)) return;
+                    const arr = [...data.certificaciones];
+                    const [moved] = arr.splice(from, 1);
+                    arr.splice(i, 0, moved);
+                    update("certificaciones", arr);
+                    e.currentTarget.classList.remove("ring-2", "ring-primary");
+                  }}
+                >
+                  <div className="flex items-center gap-2 p-3 bg-muted/40">
+                    <span
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", String(i));
+                        e.dataTransfer.effectAllowed = "move";
+                        const preview = e.currentTarget.closest("[data-drag-item]");
+                        if (preview instanceof HTMLElement) e.dataTransfer.setDragImage(preview, 28, 28);
+                        setDraggingItem(`certification-${i}`);
+                        e.currentTarget.classList.add("cursor-grabbing", "opacity-60");
+                      }}
+                      onDragEnd={(e) => {
+                        setDraggingItem(null);
+                        e.currentTarget.classList.remove("cursor-grabbing", "opacity-60");
+                      }}
+                      className="cursor-grab flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background hover:bg-muted"
+                      title="Arrastra para mover este elemento"
+                      aria-label="Arrastra para mover este elemento"
+                    >
+                      {IconGrip}
+                    </span>
+                    <span className="text-xs font-medium text-left flex-1 truncate">
+                      {c.nombre || c.institucion || `Certificación #${i + 1}`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCollapsedCertifications((prev) => ({ ...prev, [i]: !prev[i] }))}
+                      className="text-xs text-muted-foreground hover:text-foreground shrink-0"
+                      aria-expanded={!collapsed}
+                    >
+                      {collapsed ? tr("expand") : tr("minimize")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => requestDelete("certificaciones", i)}
+                      className="text-xs text-primary shrink-0"
+                    >
+                      {tr("remove")}
+                    </button>
+                  </div>
+                  {!collapsed && <div className="p-3">
                   <Field label={tr("fieldCertificationName")} help={tr("certificationNameHelp")}>
                     <input
                       className={inputCls}
@@ -2165,20 +2397,10 @@ export default function CVBuilder() {
                       }}
                     />
                   </Field>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      update(
-                        "certificaciones",
-                        data.certificaciones.filter((_, j) => j !== i),
-                      )
-                    }
-                    className="text-xs text-primary"
-                  >
-                    {tr("remove")}
-                  </button>
+                  </div>}
                 </div>
-              ))}
+                );
+              })}
               <button
                 type="button"
                 onClick={() =>
@@ -2194,8 +2416,85 @@ export default function CVBuilder() {
             </Section>
 
             <Section title={tr("sectionExperience")}>
-              {data.experiencia.map((exp, i) => (
-                <div key={i} className="border border-border rounded-md p-3 mb-2">
+              {data.experiencia.map((exp, i) => {
+                const collapsed = !!collapsedExp[i];
+                return (
+                  <div
+                    key={i}
+                    className={`relative border border-border rounded-md mb-2 overflow-hidden transition-all duration-200 ${draggingItem === `experience-${i}` ? "opacity-60 scale-[0.98] shadow-xl ring-2 ring-primary" : ""}`}
+                    data-drag-item="experience"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.add("ring-2", "ring-primary");
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove("ring-2", "ring-primary");
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from = Number(e.dataTransfer.getData("text/plain"));
+                      if (from === i || Number.isNaN(from)) return;
+                      const arr = [...data.experiencia];
+                      const [moved] = arr.splice(from, 1);
+                      arr.splice(i, 0, moved);
+                      update("experiencia", arr);
+                      e.currentTarget.classList.remove("ring-2", "ring-primary");
+                    }}
+                  >
+                    <div className="flex items-center gap-2 p-3 bg-muted/40">
+                      <span
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", String(i));
+                          e.dataTransfer.effectAllowed = "move";
+                          const preview = e.currentTarget.closest("[data-drag-item]");
+                          if (preview instanceof HTMLElement) e.dataTransfer.setDragImage(preview, 28, 28);
+                          setDraggingItem(`experience-${i}`);
+                          e.currentTarget.classList.add("opacity-50");
+                        }}
+                        onDragEnd={(e) => {
+                          setDraggingItem(null);
+                          e.currentTarget.classList.remove("opacity-50");
+                        }}
+                        className="cursor-grab active:cursor-grabbing flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background hover:bg-muted"
+                        title="Arrastra para mover este elemento"
+                        aria-label="Arrastra para mover este elemento"
+                      >
+                        {IconGrip}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedExp((prev) => ({ ...prev, [i]: !prev[i] }))
+                        }
+                        className="text-xs font-medium text-left flex-1"
+                        aria-expanded={!collapsed}
+                      >
+                        <span className="mr-2 text-muted-foreground">{collapsed ? "▸" : "▾"}</span>
+                        {exp.rol || exp.empresa
+                          ? `${exp.rol}${exp.empresa ? ` — ${exp.empresa}` : ""}`
+                          : `Experiencia #${i + 1}`}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => requestDelete("experiencia", i)}
+                        className="text-xs text-primary"
+                      >
+                        {tr("remove")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedExp((prev) => ({ ...prev, [i]: !prev[i] }))}
+                        className="text-xs text-muted-foreground hover:text-foreground shrink-0"
+                        aria-expanded={!collapsed}
+                      >
+                        {collapsed ? tr("expand") : tr("minimize")}
+                      </button>
+                    </div>
+                    {!collapsed && (
+                      <div
+                        className="p-3"
+                      >
                   <Field label={tr("fieldExperienceCompany")} help={tr("experienceCompanyHelp")}>
                     <input
                       className={inputCls}
@@ -2242,37 +2541,28 @@ export default function CVBuilder() {
                         update("experiencia", a);
                       }}
                     />
-                  </Field>
-                  <Field
-                    label={tr("fieldExperienceAchievements")}
-                    help={tr("experienceAchievementsHelp")}
-                  >
-                    <textarea
-                      className={inputCls}
-                      rows={4}
-                      value={exp.logros}
-                      onChange={(e) => {
-                        const a = [...data.experiencia];
-                        a[i] = { ...exp, logros: e.target.value };
-                        update("experiencia", a);
-                      }}
-                    />
-                  </Field>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      update(
-                        "experiencia",
-                        data.experiencia.filter((_, j) => j !== i),
-                      )
-                    }
-                    className="text-xs text-primary"
-                  >
-                    {tr("remove")}
-                  </button>
-                </div>
-              ))}
-              <button
+                   </Field>
+                   <Field
+                     label={tr("fieldExperienceAchievements")}
+                     help={tr("experienceAchievementsHelp")}
+                   >
+                     <textarea
+                       className={inputCls}
+                       rows={4}
+                       value={exp.logros}
+                       onChange={(e) => {
+                         const a = [...data.experiencia];
+                         a[i] = { ...exp, logros: e.target.value };
+                         update("experiencia", a);
+                       }}
+                     />
+                   </Field>
+                  </div>
+                )}
+              </div>
+             );
+               })}
+               <button
                 type="button"
                 onClick={() =>
                   update("experiencia", [
@@ -2287,8 +2577,83 @@ export default function CVBuilder() {
             </Section>
 
             <Section title={tr("sectionSkills")}>
-              {data.habilidades.map((g, i) => (
-                <div key={i} className="border border-border rounded-md p-3 mb-2">
+              {data.habilidades.map((g, i) => {
+                const collapsed = !!collapsedSkills[i];
+                return (
+                  <div
+                    key={i}
+                    className={`relative border border-border rounded-md mb-2 overflow-hidden transition-all duration-200 ${draggingItem === `skills-${i}` ? "opacity-60 scale-[0.98] shadow-xl ring-2 ring-primary" : ""}`}
+                    data-drag-item="skills"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.add("ring-2", "ring-primary");
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove("ring-2", "ring-primary");
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from = Number(e.dataTransfer.getData("text/plain"));
+                      if (from === i || Number.isNaN(from)) return;
+                      const arr = [...data.habilidades];
+                      const [moved] = arr.splice(from, 1);
+                      arr.splice(i, 0, moved);
+                      update("habilidades", arr);
+                      e.currentTarget.classList.remove("ring-2", "ring-primary");
+                    }}
+                  >
+                    <div className="flex items-center gap-2 p-3 bg-muted/40">
+                      <span
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", String(i));
+                          e.dataTransfer.effectAllowed = "move";
+                          const preview = e.currentTarget.closest("[data-drag-item]");
+                          if (preview instanceof HTMLElement) e.dataTransfer.setDragImage(preview, 28, 28);
+                          setDraggingItem(`skills-${i}`);
+                          e.currentTarget.classList.add("opacity-50");
+                        }}
+                        onDragEnd={(e) => {
+                          setDraggingItem(null);
+                          e.currentTarget.classList.remove("opacity-50");
+                        }}
+                        className="cursor-grab active:cursor-grabbing flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background hover:bg-muted"
+                        title="Arrastra para mover este elemento"
+                        aria-label="Arrastra para mover este elemento"
+                      >
+                        {IconGrip}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedSkills((prev) => ({ ...prev, [i]: !prev[i] }))
+                        }
+                        className="text-xs font-medium text-left flex-1"
+                        aria-expanded={!collapsed}
+                      >
+                        <span className="mr-2 text-muted-foreground">{collapsed ? "▸" : "▾"}</span>
+                        {g.categoria || `Categoría #${i + 1}`}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => requestDelete("habilidades", i)}
+                        className="text-xs text-primary"
+                      >
+                        {tr("remove")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedSkills((prev) => ({ ...prev, [i]: !prev[i] }))}
+                        className="text-xs text-muted-foreground hover:text-foreground shrink-0"
+                        aria-expanded={!collapsed}
+                      >
+                        {collapsed ? tr("expand") : tr("minimize")}
+                      </button>
+                    </div>
+                    {!collapsed && (
+                      <div
+                        className="p-3"
+                      >
                   <Field label={tr("fieldSkillsCategory")} help={tr("skillsCategoryHelp")}>
                     <input
                       className={inputCls}
@@ -2310,21 +2675,12 @@ export default function CVBuilder() {
                         update("habilidades", a);
                       }}
                     />
-                  </Field>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      update(
-                        "habilidades",
-                        data.habilidades.filter((_, j) => j !== i),
-                      )
-                    }
-                    className="text-xs text-primary"
-                  >
-                    {tr("remove")}
-                  </button>
+                    </Field>
+                    </div>
+                  )}
                 </div>
-              ))}
+              );
+            })}
               <button
                 type="button"
                 onClick={() =>
@@ -2372,19 +2728,32 @@ export default function CVBuilder() {
       {/* Mobile preview - only in modal, not visible by default */}
       {/* Preview is shown only when user clicks the floating button */}
 
-      <footer className="border-t border-border px-4 sm:px-6 py-6 text-center text-xs text-muted-foreground bg-card">
-        <p>{tr("footerCopyright")}</p>
-        <p className="mt-1">
-          {tr("footerMadeBy")} {""}
-          <a
-            href="https://github.com/wilmerparragomez"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary font-medium hover:underline"
-          >
-            DevsParra
-          </a>
-        </p>
+      <footer className="site-footer">
+        <div className="site-footer-inner">
+          <div className="site-footer-main">
+            <div className="site-footer-brand">
+              <img src="/cvrap-icon.svg" alt="CVrap" className="site-footer-logo" />
+              <div>
+                <p className="site-footer-title">CVrap</p>
+                <p className="site-footer-description">{tr("headerSubtitle")}</p>
+              </div>
+            </div>
+            <div className="site-footer-credit">
+              <span>{tr("footerMadeBy")}</span>
+              <a
+                href="https://github.com/wilmerparragomez"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                DevsParra <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+          <div className="site-footer-bottom">
+            <span>{tr("footerCopyright")}</span>
+            <span className="site-footer-status"><span aria-hidden="true">●</span> CVrap online</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
@@ -2564,6 +2933,7 @@ function ModernTemplate({
     dp.ubicacion && { label: tr("locationLabel"), value: dp.ubicacion },
     dp.correo && { label: tr("emailLabel"), value: dp.correo },
     dp.telefono && { label: tr("phoneLabel"), value: dp.telefono },
+    dp.fecha_nacimiento && { label: tr("birthDateLabel"), value: formatBirthDate(dp.fecha_nacimiento) },
   ].filter(Boolean) as Array<{ label: string; value: string }>;
   const socialItems = [
     data.redes_sociales.linkedin && { label: tr("linkedinLabel"), value: data.redes_sociales.linkedin, icon: "🔗" },
@@ -2791,7 +3161,7 @@ function CreativeTemplate({
             {dp.fecha_nacimiento && (
               <div>
                 <strong>{tr("birthDateLabel")}</strong>
-                <p>{dp.fecha_nacimiento}</p>
+                <p>{formatBirthDate(dp.fecha_nacimiento)}</p>
               </div>
             )}
             {data.redes_sociales.linkedin && (
