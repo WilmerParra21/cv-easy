@@ -2836,6 +2836,12 @@ function HarvardTemplate({
         {contactLine && <p className="text-[11px] mt-3 text-gray-700 break-words">{contactLine}</p>}
       </header>
 
+      {data.perfil && (
+        <HarvardBlock title={tr("sectionProfile")}>
+          <p className="text-justify">{data.perfil}</p>
+        </HarvardBlock>
+      )}
+
       {data.educacion.some((e) => e.institucion || e.grado) && (
         <HarvardBlock title={tr("sectionEducation")}>
           {data.educacion.map((e, i) => (

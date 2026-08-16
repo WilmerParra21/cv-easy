@@ -639,6 +639,11 @@ button[type="button"]:not(.modal-cancel-btn):not(.modal-secondary-btn):not(.moda
 }
 
 /* Scrollbar styling for better aesthetics */
+html {
+  scrollbar-color: var(--muted-foreground) var(--background);
+  scrollbar-width: thin;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -659,18 +664,19 @@ button[type="button"]:not(.modal-cancel-btn):not(.modal-secondary-btn):not(.moda
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: #0f172a;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: var(--muted);
+  background: #64748b;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary);
+  background: #93c5fd;
 }
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary);
+
+html.dark {
+  scrollbar-color: #64748b #0f172a;
 }
 
 /* Pagination styles */
